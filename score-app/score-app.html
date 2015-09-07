@@ -1,14 +1,52 @@
 <head>
-  <title>score-app</title>
+  <title>Score-App</title>
 </head>
-
+ 
 <body>
-  <h1>Welcome to Meteor!</h1>
-
-  {{> hello}}
+    {{> main}}
 </body>
 
-<template name="hello">
-  <button>Click Me</button>
-  <p>You've pressed the button {{counter}} times.</p>
+<template name="main">
+    {{#if currentUser}}
+        {{> tournament_view}}
+    {{else}}
+        {{> login_view}}
+    {{/if}}
+
+</template>
+
+<template name="login_view">
+    <div class="container">
+        <div id="login-screen">
+            {{> loginButtons}}
+        </div>
+    </div>
+</template>
+
+<template name="tournament_view">
+    <div id='wrapper' class="container">
+        <div id="sidebar">
+            <ul>
+                <li><a href="#">Tournament 1</a></li>
+                <li><a href="#">Tournament 2</a></li>
+                <li><a href="#">Tournament 3</a></li>
+                <li>{{> loginButtons}} </li>
+            </ul>
+        </div>
+        <div class="info_view">
+            <a href="#" data-toggle=".container" id="sidebar-toggle" class="side-bar">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </a>
+            <div class="content">
+                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            </div>
+        </div>
+    </div>
 </template>

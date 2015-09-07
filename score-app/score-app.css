@@ -30,7 +30,7 @@
 body, html {
     height: 100%;
     margin: 0;
-    overflow:hidden;
+    overflow:auto;
     font-family: helvetica;
     font-weight: 100;
 }
@@ -48,6 +48,12 @@ body, html {
  
 .container.open-sidebar {
     left: 240px;
+    position: fixed;
+    -webkit-transition:  left 0.4s ease-in-out;
+    -moz-transition:  left 0.4s ease-in-out;
+    -ms-transition:  left 0.4s ease-in-out;
+    -o-transition:  left 0.4s ease-in-out;
+    transition:  left 0.4s ease-in-out;
 }
  
 #sidebar {
@@ -122,4 +128,8 @@ width: 100%;
 }
 .info_view #sidebar-toggle .bar:last-child{
      margin-bottom: 0;   
+}
+
+#stickytoggle {
+  position: fixed;
 }

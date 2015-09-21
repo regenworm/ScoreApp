@@ -1,41 +1,138 @@
 <head>
   <title>Score-App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
  
 <body>
     {{> main}}
 </body>
 
-<template name="main">
+<!-- Main -->
+<template name="home">
     {{#if currentUser}}
         {{> tournament_view}}
     {{else}}
-        {{> login_view}}
+        {{> login}}
     {{/if}}
-
 </template>
 
-<template name="login_view">
-    <div class="container">
-        <div id="login-screen">
-            {{> loginButtons}}
+<!-- Log in -->
+<template name="login">
+    <div id="login" class="container">
+        <div class="row">
+            <div id="loginbox" class="col-xs-8 col-xs-offset-2">
+                <h1> Login </h1>
+                <form class="login" role="form">
+                    <div class="form-group">
+                        <input class="form-control" type="text" name="username" placeholder="Username">
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" type="password" name="password" placeholder="Password">
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" type="submit" value="Login">
+                    </div>
+                </form>
+                <button class="form-control btn-info">Register</button>
+            </div>
         </div>
     </div>
 </template>
 
-<template name="tournament_view">
+<!-- Register -->
+<template name="register">
+    <div id="login" class="container">
+        <div class="row">
+            <div id="loginbox" class="col-xs-8 col-xs-offset-2">
+                <h1> Register </h1>
+                <form class="register" role="form">
+                    <div class="form-group">
+                        <input class="form-control" type="text" name="usernamer" placeholder="Username">
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" type="password" name="passwordr" placeholder="Password">
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control btn-info" type="submit" value="Register">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Sidebar -->
+<template name="sidebar">
+    <div id="sidebar">
+            <ul class="horizontalview">
+                <li><a href="/field1">Field 1</a></li>
+                <li><a href="/field2">Field 2</a></li>
+                <li><a href="/field3">Field 3</a></li>
+                <li><a href="#" class="logout">Log Out</a></li>
+            </ul>
+        </div>
+</template>
+
+
+
+
+
+<!-- Field view -->
+<template name="field_view">
     <div id='wrapper' class="container">
         <div id="sidebar">
+            <ul class="horizontalview">
+                <li><a href="/field1">Field 1</a></li>
+                <li><a href="/field2">Field 2</a></li>
+                <li><a href="/field3">Field 3</a></li>
+                <li>{{> loginButtons}} </li>
+            </ul>
+        </div>
+        <div class="info_view fieldview">
+            <div id="stickytoggle">
+                <a href="#" data-toggle=".container" id="sidebar-toggle" class="side-bar">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </a>
+            </div>
+            <div class="content">
+                <div id="fieldname" class="row">
+                    <h1> Field 1 </h1>
+                </div>
+                {{> team}}
+                {{> team}}
+            </div>
+        </div>
+    </div>
+</template>
+
+<template name="team">
+    <div class="col-xs-6">
+        <ul>
+            <li> <h2> Team 1</h2></li>
+            <li> Rood </li>
+            <li> 1 </li>
+            <li><button> <span class="glyphicon glyphicon-plus"></span></button></li>
+            <li><button> <span class="glyphicon glyphicon-minus"></span></button></li>
+        </ul>
+    </div>
+</template>
+
+<!-- Pick Tournament -->
+<template name="tournament_view">
+    <div id='wrapper' class="container open-sidebar">
+        <div id="sidebar">
             <ul>
-                <li><a href="#">Tournament 1</a></li>
-                <li><a href="#">Tournament 2</a></li>
-                <li><a href="#">Tournament 3</a></li>
+                <li><a href="/tournament-1">Tournament 1</a></li>
+                <li><a href="/tournament-2">Tournament 2</a></li>
+                <li><a href="/tournament-3">Tournament 3</a></li>
                 <li>{{> loginButtons}} </li>
             </ul>
         </div>
         <div class="info_view">
             <div id="stickytoggle">
-                <a href="#" data-toggle=".container" id="sidebar-toggle" class="side-bar">
+                <a href="#" data-toggle=".container" id="sidebar-toggle" class="side-bar" skipir="">
                     <span class="bar"></span>
                     <span class="bar"></span>
                     <span class="bar"></span>

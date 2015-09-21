@@ -1,30 +1,25 @@
-/* The login menu has to be set at a specific height and I chose to center mine. */
+/* login page*/
 
-#login-screen .dropdown-menu {
-  display: block;
-  position: relative;
-  height: 245px;
-  margin-left: auto;
-  margin-right: auto;
-  float: none;
+#login {
+    background: #DF314D;
+    color: white;
+    text-align: center;
 }
 
-#login-screen #login-dropdown-list {
-  display: block;
+#login input {
+    clear: both;
+    opacity: 80%;
 }
 
-/* Hides the toggle that you click on */
-
-#login-screen a.dropdown-toggle {
-  display: none;
+#loginbox {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
-#login-screen {
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
+.hidethis {
+    display: none;
 }
-
 
 /* */
 body, html {
@@ -100,8 +95,8 @@ body, html {
 .info_view .content{
     box-sizing: border-box;
     -moz-box-sizing: border-box;
-padding-left: 60px;
-width: 100%;
+    padding-left: 60px;
+    width: 100%;
 }
 .info_view .content h1{
     font-weight: 100;
@@ -119,7 +114,7 @@ width: 100%;
     float: left;
 }
 .info_view #sidebar-toggle .bar{
-     display: block;
+    display: block;
     width: 18px;
     margin-bottom: 3px;
     height: 2px;
@@ -127,9 +122,21 @@ width: 100%;
     border-radius: 1px;   
 }
 .info_view #sidebar-toggle .bar:last-child{
-     margin-bottom: 0;   
+    margin-bottom: 0;   
 }
 
 #stickytoggle {
-  position: fixed;
+    position: fixed;
+}
+/* fieldview*/
+#fieldname {
+    text-align: center;
+}
+.fieldview ul {
+    text-align: center;
+    list-style-type: none;
+}
+
+.fieldview li {
+    display: block;
 }

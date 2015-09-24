@@ -4,10 +4,9 @@
 </head>
  
 <body>
-    {{> main}}
 </body>
 
-<!-- Main -->
+<!-- home -->
 <template name="home">
     {{#if currentUser}}
         {{> tournament_view}}
@@ -73,6 +72,19 @@
         </div>
 </template>
 
+<template name="menu">
+    <div id="stickytoggle">
+        <button data-toggle=".container" id="sidebar-toggle" class="side-bar">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+
+        <button id="backbutton" class="side-bar">
+            <span class="glyphicon glyphicon-triangle-left"></span>
+        </button>
+    </div>
+</template>
 
 
 
@@ -89,13 +101,7 @@
             </ul>
         </div>
         <div class="info_view fieldview">
-            <div id="stickytoggle">
-                <a href="#" data-toggle=".container" id="sidebar-toggle" class="side-bar">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </a>
-            </div>
+            {{> menu}}
             <div class="content">
                 <div id="fieldname" class="row">
                     <h1> Field 1 </h1>
@@ -131,13 +137,7 @@
             </ul>
         </div>
         <div class="info_view">
-            <div id="stickytoggle">
-                <a href="#" data-toggle=".container" id="sidebar-toggle" class="side-bar" skipir="">
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                    <span class="bar"></span>
-                </a>
-            </div>
+            {{> menu}}
             <div class="content">
                 <h1> Leuke shit </h1>
                 <p>

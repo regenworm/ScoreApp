@@ -18,10 +18,10 @@ Router.route('/tournament-1', {
 
 // client side code
 if (Meteor.isClient) {
-    console.log(Meteor.users.find().fetch());
+    console.log("hoi1");
     // toggle sidebar
-    Template.body.events({
-        "click .side-bar": function (e) {
+    Template.menu.events({
+        "click #sidebar-toggle": function (e) {
             e.preventDefault();
             var el = $('#wrapper');
             if (!el.hasClass("open-sidebar")) {
@@ -30,6 +30,11 @@ if (Meteor.isClient) {
                 el.removeClass('open-sidebar')
             }
 
+        },
+
+        "click #backbutton": function (e) {
+            e.preventDefault();
+            Router.go('home');
         }
     });
 
@@ -98,6 +103,45 @@ if (Meteor.isClient) {
     });
 }
 
-if (Meteor.isServer) {
-    Meteor.users.find().fetch();
+// Read data from server
+if (true) {
+    // var org_id = ;
+    // var sport = ;
+    // var ACCESS_TOKEN = ;
+    var CLIENT_ID = "04d5dc39a859c5cebd26b36a00568f";
+    var CLIENT_SECRET = "54bd6343cd051bb322aed42c19d090";
 }
+// https://www.leaguevine.com/oauth2/token/?client_id=04d5dc39a859c5cebd26b36a00568f
+//     &client_secret=54bd6343cd051bb322aed42c19d090
+//     &grant_type=client_credentials
+//     &scope=universal
+
+// https://www.leaguevine.com/oauth2/token/?client_id=04d5dc39a859c5cebd26b36a00568f
+//     &response_type=code
+//     &redirect_uri=YOUR_REGISTERED_REDIRECT_URI
+//     &scope=universal
+
+// https://www.leaguevine.com/oauth2/token/?client_id=YOUR_CLIENT_ID
+//     &client_secret=CLIENT_SECRET
+//     &grant_type=client_credentials
+//     &scope=universal
+
+// $(function() {
+//     $.ajax({
+//         url: "https://api.leaguevine.com/v1/leagues/?" + 
+//              "organization_id=2" + 
+//              "&sport=ultimate" +
+//              "&access_token=ACCESS_TOKEN",
+//         dataType: "json",
+//         contentType: "application/json",
+//         beforeSend: function(jqXHR, settings) {
+//             settings.accepts['json'] = "application/json";
+//         },
+//         success: function(data){
+//             for (i=0; i < data.objects.length; i++) {  
+//                 var obj = data.objects[i];
+//                 // Do something with the objects
+//             }
+//         },
+//     });
+// });

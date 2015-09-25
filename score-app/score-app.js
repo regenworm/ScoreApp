@@ -18,7 +18,6 @@ Router.route('/tournament-1', {
 
 // client side code
 if (Meteor.isClient) {
-    console.log("hoi1");
     // toggle sidebar
     Template.menu.events({
         "click #sidebar-toggle": function (e) {
@@ -43,8 +42,8 @@ if (Meteor.isClient) {
     Template.register.events({
         'submit form': function(e) {
             e.preventDefault();
-            var username = $('[name=username]').val();
-            var password = $('[name=password]').val();
+            var username = $('[name=usernamer]').val();
+            var password = $('[name=passwordr]').val();
             Accounts.createUser({
                 username: username,
                 password: password
@@ -91,7 +90,6 @@ if (Meteor.isClient) {
             e.preventDefault();
             var username = $('[name=username]').val();
             var password = $('[name=password]').val();
-            window.alert(username);
             Router.go('/register');
             $('[name=username]').val(username);
             $('[name=password]').val(password);

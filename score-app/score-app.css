@@ -13,7 +13,7 @@
 
 #loginbox {
     position: relative;
-    top: 50%;
+    top: 100px;
     transform: translateY(-50%);
 }
 

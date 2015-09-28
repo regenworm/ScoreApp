@@ -1,4 +1,4 @@
-Tasks = new Mongo.Collection("tasks");
+Tournaments = new Mongo.Collection("tournaments");
 
 // routing
 Router.route('/', {
@@ -97,22 +97,42 @@ if (Meteor.isClient) {
         }
     });
 
+    // when creating an account no email necessary
     Accounts.ui.config({
         passwordSignupFields: "USERNAME_ONLY"
     });
 
+    //  update tournaments
     Meteor.call("updateTournament", function(error,results) {
-        console.log(results.content);
+        console.log(results.data["name"] + " " + results.data["id"]);
+    });
+
+    // update swiss rounds
+    Meteor.call("updateSwiss", function(error,results) {
+        var out = results.data.objects[0].games;
+        console.log(out);
     });
 }
 
 if (Meteor.isServer) {
+    var tid = 20019;
     Meteor.methods({
         updateTournament: function () {
             this.unblock();
-            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/20019/");
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/" + tid + "/");
+        },
+
+        updateTeams: function () {
+            this.unblock();
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
+        },
+        updateSwiss: function () {
+            this.unblock();
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/swiss_rounds/?tournament_id=" + tid);
         }
     });
+
+    // Tournaments.remove({});
 }
 
 // Read data from server

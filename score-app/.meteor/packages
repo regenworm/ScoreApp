@@ -12,3 +12,4 @@ twbs:bootstrap
 ian:accounts-ui-bootstrap-3
 jquery
 iron:router
+http

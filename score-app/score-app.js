@@ -1,4 +1,5 @@
 Tournaments = new Mongo.Collection("tournaments");
+Games = new Mongo.Collection("games");
 
 // routing
 Router.route('/', {
@@ -133,23 +134,6 @@ if (Meteor.isClient) {
         }
     });
 
-    //  update tournaments
-    Meteor.call("updateTournament", function(error,results) {
-
-        if (Tournaments.find({id: results.data["id"]}).count()==0)
-        {
-            Tournaments.insert(
-                { name: results.data["name"], id: results.data["id"]}
-            );
-        }
-
-    });
-
-    // update swiss rounds
-    Meteor.call("updateSwiss", function(error,results) {
-        var out = results.data.objects[0].games;
-        // console.log(out);
-    });
 }
 
 if (Meteor.isServer) {
@@ -164,12 +148,38 @@ if (Meteor.isServer) {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
         },
-        updateSwiss: function () {
+        updateGames: function () {
             this.unblock();
-            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/swiss_rounds/?tournament_id=" + tid);
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
         }
     });
+    //  update tournaments
+    Meteor.call("updateTournament", function(error,results) {
 
+        if (Tournaments.find({id: results.data["id"]}).count()==0)
+        {
+            Tournaments.insert(
+                { name: results.data["name"], id: results.data["id"]}
+            );
+        }
+
+    });
+
+    // update games rounds
+    Meteor.call("updateGames", function(error,results) {
+        results.data["objects"].forEach(function (match) {
+            if (Games.find({id: match["id"]}).count()==0) {
+                Games.insert({   
+                    team_1_id:(match["team_1_id"]),
+                    team_2_id:(match["team_2_id"]),
+                    id:(match["id"]),
+                    game_site_id:(match["game_site_id"]),
+                    tournament_id:(match["tournament_id"]),
+                    start:(match["start_time"])}
+                );
+            }
+        });
+    });
     // Tournaments.remove({});
 }
 

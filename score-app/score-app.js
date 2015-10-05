@@ -15,20 +15,21 @@ Router.route('/tournament-1', {
     name: 'tournament-1',
     template: 'field_view'
 });
-temp = Tournaments.find();
-console.log(Tournaments.find().count());
-console.log(Tournaments.find()[i].id);
-for (i=0; i < 1; i++) {
-    console.log("hoi");
+// temp = Tournaments.find();
+// for (i=0; i < 1; i++) {
+//     console.log("hoi");
+//     Router.route('/20019', {
+//         name: "hoi",
+//         template: 'field_view'
+//     });
+// }
+Tournaments.find().forEach(function(tournament) { 
     Router.route('/20019', {
-        name: "hoi",
+        name: toString(tournament.id),
         template: 'field_view'
     });
-    // console.log(Router);
-}
-_.each(Router.routes,function(route){
-    console.log(route.getName());
-})
+});
+
 // // routes
 // Tournaments.find().forEach(function (entry) {
 //     console.log('/'+entry.id.toString());
@@ -147,7 +148,7 @@ if (Meteor.isClient) {
     // update swiss rounds
     Meteor.call("updateSwiss", function(error,results) {
         var out = results.data.objects[0].games;
-        console.log(out);
+        // console.log(out);
     });
 }
 

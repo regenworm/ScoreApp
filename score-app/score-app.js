@@ -15,6 +15,30 @@ Router.route('/tournament-1', {
     name: 'tournament-1',
     template: 'field_view'
 });
+temp = Tournaments.find();
+console.log(Tournaments.find().count());
+console.log(Tournaments.find()[i].id);
+for (i=0; i < 1; i++) {
+    console.log("hoi");
+    Router.route('/20019', {
+        name: "hoi",
+        template: 'field_view'
+    });
+    // console.log(Router);
+}
+_.each(Router.routes,function(route){
+    console.log(route.getName());
+})
+// // routes
+// Tournaments.find().forEach(function (entry) {
+//     console.log('/'+entry.id.toString());
+//     Router.route('/20019/', {
+//         name: "bla",
+//         template: 'field_view'
+//     });
+//     i++; 
+//  });
+
 
 // client side code
 if (Meteor.isClient) {
@@ -102,9 +126,22 @@ if (Meteor.isClient) {
         passwordSignupFields: "USERNAME_ONLY"
     });
 
+    Template.tournament_view.helpers({
+        tournaments: function () {
+            return Tournaments.find({});
+        }
+    });
+
     //  update tournaments
     Meteor.call("updateTournament", function(error,results) {
-        console.log(results.data["name"] + " " + results.data["id"]);
+
+        if (Tournaments.find({id: results.data["id"]}).count()==0)
+        {
+            Tournaments.insert(
+                { name: results.data["name"], id: results.data["id"]}
+            );
+        }
+
     });
 
     // update swiss rounds
@@ -135,9 +172,5 @@ if (Meteor.isServer) {
     // Tournaments.remove({});
 }
 
-// Read data from server
-if (true) {
-    var CLIENT_ID = "04d5dc39a859c5cebd26b36a00568f";
-    var CLIENT_SECRET = "54bd6343cd051bb322aed42c19d090";
-}
+
 

@@ -125,14 +125,19 @@
     </div>
 </template>
 
+<!-- Tournament sidebar -->
+<template name="tournament">
+    <li><a href={{id}}>{{name}}</a></li>
+</template>
+
 <!-- Pick Tournament -->
 <template name="tournament_view">
     <div id='wrapper' class="container open-sidebar">
         <div id="sidebar">
             <ul>
-                <li><a href="/tournament-1">Tournament 1</a></li>
-                <li><a href="/tournament-2">Tournament 2</a></li>
-                <li><a href="/tournament-3">Tournament 3</a></li>
+                {{#each tournaments}}
+                    {{> tournament}}
+                {{/each}}
                 <li>{{> loginButtons}} </li>
             </ul>
         </div>

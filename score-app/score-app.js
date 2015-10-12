@@ -1,5 +1,6 @@
 Tournaments = new Mongo.Collection("tournaments");
 Games = new Mongo.Collection("games");
+Fields = new Mongo.Collection("fields");
 
 // routing
 Router.route('/', {
@@ -16,30 +17,35 @@ Router.route('/tournament-1', {
     name: 'tournament-1',
     template: 'field_view'
 });
-// temp = Tournaments.find();
-// for (i=0; i < 1; i++) {
-//     console.log("hoi");
-//     Router.route('/20019', {
-//         name: "hoi",
-//         template: 'field_view'
-//     });
-// }
-Tournaments.find().forEach(function(tournament) { 
-    Router.route('/20019', {
-        name: toString(tournament.id),
-        template: 'field_view'
-    });
-});
 
-// // routes
-// Tournaments.find().forEach(function (entry) {
-//     console.log('/'+entry.id.toString());
-//     Router.route('/20019/', {
-//         name: "bla",
-//         template: 'field_view'
+for (i=0; i < 1; i++) {
+    Router.route('/20019', {
+        name: "tournament-"+i,//+toString(tournament.id),
+        template: 'field_view'
+    },{where: 'server'});
+}
+
+for (i=0; i < 2; i++) {
+    Router.route("field-"+i, {
+        name: 'Field-'+i,
+        template: 'field_view',
+        data: function() {
+            var games = Games.find({game_site_id: Fields.find()[i]});
+            var pathname = 'Field-'+i;
+        }
+    });
+};
+
+// Tournaments.find().forEach(function(tournament) {
+//     console.log("message"); 
+//     Router.route('/:_id', function() {
+//         this.render('field_view');
+//     }, {
+//         name: 'tournaments'//toString(tournament.id),
+//         // template: 'field_view'
 //     });
-//     i++; 
-//  });
+// });
+
 
 
 // client side code
@@ -134,6 +140,12 @@ if (Meteor.isClient) {
         }
     });
 
+    Template.field_view.helpers({
+        fields: function () {
+            return Fields.find({});
+        }
+    });
+
 }
 
 if (Meteor.isServer) {
@@ -151,7 +163,12 @@ if (Meteor.isServer) {
         updateGames: function () {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
+        },
+        updateFields: function () {
+            this.unblock();
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid);
         }
+
     });
     //  update tournaments
     Meteor.call("updateTournament", function(error,results) {
@@ -180,8 +197,20 @@ if (Meteor.isServer) {
             }
         });
     });
+
+    Meteor.call('updateFields', function (error, results) {
+        results.data["objects"].forEach(function(event_site) {
+            if(Fields.find({id: event_site["id"]}).count()==0) {
+                Fields.insert({
+                    id: event_site["id"],
+                    name: event_site["name"],
+                    location: event_site["event_site"]["description"]
+                });
+            }
+        });
+    });
+
     // Tournaments.remove({});
 }
-
 
 

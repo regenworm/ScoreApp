@@ -87,6 +87,9 @@
 </template>
 
 
+<template name="field">
+    <li><a href="field-0">{{name}}</a></li>
+</template>
 
 
 <!-- Field view -->
@@ -94,9 +97,9 @@
     <div id='wrapper' class="container">
         <div id="sidebar">
             <ul class="horizontalview">
-                <li><a href="/field1">Field 1</a></li>
-                <li><a href="/field2">Field 2</a></li>
-                <li><a href="/field3">Field 3</a></li>
+                {{#each fields}}
+                    <li><a href="field-1">{{name}}</a></li>
+                {{/each}}
                 <li>{{> loginButtons}} </li>
             </ul>
         </div>
@@ -104,7 +107,7 @@
             {{> menu}}
             <div class="content">
                 <div id="fieldname" class="row">
-                    <h1> Field 1 </h1>
+                    <h1> {{Field 1}} </h1>
                 </div>
                 {{> team}}
                 {{> team}}
@@ -125,9 +128,9 @@
     </div>
 </template>
 
-<!-- Tournament sidebar -->
+<!-- Tournaments -->
 <template name="tournament">
-    <li><a href={{id}}>{{name}}</a></li>
+    <li><a href="/20019">{{name}}</a></li>
 </template>
 
 <!-- Pick Tournament -->

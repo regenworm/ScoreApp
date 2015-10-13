@@ -1,8 +1,9 @@
 Tournaments = new Meteor.Collection('tournaments');
 
-// Routes
+// Routes-----------------------------------------------------------------------
 Router.configure( {
-    layoutTemplate: 'main'
+    layoutTemplate: 'main',
+    loadingTemplate: 'loading'
 })
 Router.route('/', {
     name: 'home',
@@ -42,7 +43,7 @@ Router.route('/login', {
     }
 });
 Router.route('/tournament/:id', {
-    name: 'tournamentPage',
+    name: 'tournament',
     template: 'tournamentPage',
     data: function() {
         // Soms moet het met parseInt worden gedaan om onbekende redenen
@@ -68,6 +69,7 @@ Router.route('/tournament/:id', {
 });
 
 if (Meteor.isClient) {
+    // Helper functions---------------------------------------------------------
     // Find all tournaments
     Template.tournamentView.helpers( {
         'tournament': function() {
@@ -95,6 +97,7 @@ if (Meteor.isClient) {
         }
     });
 
+    // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
     $.validator.setDefaults( {
             rules: {
@@ -193,8 +196,19 @@ if (Meteor.isClient) {
             Router.go('login');
         }
     });
+
+    // Subscriptions------------------------------------------------------------
+    Template.tournamentView.onCreated(function() {
+        this.subscribe('tournaments');
+    });
+
+    Template.tournamentPage.onCreated(function() {
+        this.subscribe('tournaments');
+    });
 }
 
 if (Meteor.isServer) {
-
+    Meteor.publish('tournaments', function() {
+        return Tournaments.find()
+    })
 }

@@ -25,16 +25,25 @@
     <h2>Tournaments</h2>
     {{> addTournament}}
     <ul>
-        {{#each tournament}}
-            {{> tournamentItem}}
-        {{/each}}
+        {{#if Template.subscriptionsReady}}
+            {{#each tournament}}
+                {{> tournamentItem}}
+            {{/each}}
+        {{else}}
+            <li>Loading...</li>
+        {{/if}}
     </ul>
     {{> tournamentsCount}}
 </template>
 
 <!-- Each tournament has an own link -->
 <template name="tournamentItem">
-    <li><a href="{{pathFor route='tournamentPage'}}">{{name}}</a></li>
+    <li><a href="{{pathFor route='tournament'}}">{{name}}</a></li>
+</template>
+
+<!-- Each tournament has an own page -->
+<template name="tournamentPage">
+    <h2>Tournament: {{name}}</h2>
 </template>
 
 <!-- Count the number of tournaments and display it -->
@@ -84,7 +93,7 @@
     </form>
 </template>
 
-<!-- Each tournament has an own page -->
-<template name="tournamentPage">
-    <h2>Tournament: {{name}}</h2>
+<!-- Loading -->
+<template name="loading">
+    <p>Loading...</p>
 </template>

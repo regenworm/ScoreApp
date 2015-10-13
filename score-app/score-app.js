@@ -51,7 +51,7 @@ Router.route('/tournament/:id', {
         var currentTournament = this.params["id"];
         var returnValue = Tournaments.findOne({id: currentTournament});
         if (returnValue) {
-            return returnValue
+            return returnValue;
         }
         else {
             return Tournaments.findOne({id: parseInt(currentTournament)});
@@ -88,11 +88,8 @@ if (Meteor.isClient) {
     Template.addTournament.events( {
         'submit form': function(event) {
             event.preventDefault();
-            var tournamentName = $('[name=tournamentName]').val()
-            Tournaments.insert( {
-                name: tournamentName, 
-                id: Math.floor(Math.random() * 10000) + 1
-            });
+            var tournamentName = $('[name=tournamentName]').val();
+            Meteor.call('createNewTournament', tournamentName);
             $('[name=tournamentName]').val('');
         }
     });
@@ -208,7 +205,28 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
+    // Publishions--------------------------------------------------------------
     Meteor.publish('tournaments', function() {
         return Tournaments.find()
-    })
+    });
+
+    // Methodes-----------------------------------------------------------------
+    Meteor.methods( {
+        // Mag later weg
+        'createNewTournament': function(tournamentName) {
+            var currentUser = Meteor.userId();
+            if (!currentUser) {
+                throw new Meteor.Error("not-logged-in", "You're not logged in.");
+            }
+            check(tournamentName, String);
+            if (tournamentName =="") {
+                listname = "Untitled";
+            }
+            var data = {
+                name: tournamentName, 
+                id: Math.floor(Math.random() * 10000) + 1
+            };
+            Tournaments.insert(data);
+        }
+    });
 }

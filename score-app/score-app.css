@@ -1,1 +1,4 @@
 /* CSS declarations go here */
+input.error {
+	background-color:rgb(255, 231, 231);
+}

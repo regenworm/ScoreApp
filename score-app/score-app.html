@@ -47,19 +47,33 @@
 <!-- Register page -->
 <template name="registerPage">
     <h2>Register</h2>
+    <form class="register">
+        <p>Email: <input type="email" name="email" required></p>
+        <p>Password: <input type="password" name="password" required></p>
+        <p><input type="submit" value="Register"></p>
+    </form>
 </template>
 
 <!-- Login page -->
 <template name="loginPage">
     <h2>Login</h2>
+    <form class="login">
+        <p>Email: <input type="email" name="email" required></p>
+        <p>Password: <input type="password" name="password" required></p>
+        <p><input type="submit" value="Login"></p>
+    </form>
 </template>
 
 <!-- Navigation -->
 <template name="navigation">
     <ul>
         <li><a href="{{pathFor route='home'}}">Home</a></li>
-        <li><a href="{{pathFor route='register'}}">Register</a></li>
-        <li><a href="{{pathFor route='login'}}">Login</a></li>
+        {{#if currentUser}}
+            <li><a href="#" class="logout">Logout</a></li>
+        {{else}}
+            <li><a href="{{pathFor route='register'}}">Register</a></li>
+            <li><a href="{{pathFor route='login'}}">Login</a></li>
+        {{/if}}
     </ul>
 </template>
 

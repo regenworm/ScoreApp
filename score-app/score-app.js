@@ -1,23 +1,50 @@
 Tournaments = new Meteor.Collection('tournaments');
 
 // Routes
-Router.configure({
+Router.configure( {
     layoutTemplate: 'main'
 })
 Router.route('/', {
     name: 'home',
-    template: 'homePage'
+    template: 'homePage',
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            this.next();
+        }
+        else {
+            Router.go('login');
+        }
+    }
 });
 Router.route('/register', {
-    template: 'registerPage'
+    template: 'registerPage',
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            Router.go('home');
+        }
+        else {
+            this.next();
+        }
+    }
 });
 Router.route('/login', {
-    template: 'loginPage'
+    template: 'loginPage',
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            Router.go('home');
+        }
+        else {
+            this.next();
+        }
+    }
 });
 Router.route('/tournament/:id', {
     name: 'tournamentPage',
     template: 'tournamentPage',
-    data: function(){
+    data: function() {
         // Soms moet het met parseInt worden gedaan om onbekende redenen
         // Later testen met echte data om te kijken of het nog steeds voorkomt.
         var currentTournament = this.params["id"];
@@ -28,37 +55,144 @@ Router.route('/tournament/:id', {
         else {
             return Tournaments.findOne({id: parseInt(currentTournament)});
         }
+    },
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            this.next();
+        }
+        else {
+            Router.go('login');
+        }
     }
 });
 
 if (Meteor.isClient) {
     // Find all tournaments
-    Template.tournamentView.helpers({
-        'tournament': function(){
+    Template.tournamentView.helpers( {
+        'tournament': function() {
             return Tournaments.find({}, {sort: {name: 1}});
         }
-    })
+    });
 
     // Count tournaments
-    Template.tournamentsCount.helpers({
-        'totalTournaments': function(){
+    Template.tournamentsCount.helpers( {
+        'totalTournaments': function() {
             return Tournaments.find().count();
         }
-    })
+    });
 
     // mag later weg
-    Template.addTournament.events({
-        'submit form': function(event){
+    Template.addTournament.events( {
+        'submit form': function(event) {
             event.preventDefault();
             var tournamentName = $('[name=tournamentName]').val()
-            Tournaments.insert({name: tournamentName, 
-                id: Math.floor(Math.random() * 10000) + 1}, 
-                function(error, results){
-                    Router.go('tournamentPage', {_id: results});
+            Tournaments.insert( {
+                name: tournamentName, 
+                id: Math.floor(Math.random() * 10000) + 1
             });
             $('[name=tournamentName]').val('');
         }
-    })
+    });
+
+    // Default messages for errors for login and register
+    $.validator.setDefaults( {
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true,
+                    minlength: 6
+                }
+            },
+            messages: {
+                email: {
+                    required: "You must enter an email address.",
+                    email: "You've entered an invalid email address."
+                },
+                password: {
+                    required: "You must enter a password.",
+                    minlength: "You password must be at least {0} characters.",
+                    password: "You've entered an invalid password."
+                }
+            }
+    });
+
+    // Login prevent
+    Template.loginPage.events( {
+        'submit form': function(event) {
+            event.preventDefault();
+        }
+    });
+    // Validate login
+    Template.loginPage.onRendered(function() {
+        var validator = $('.login').validate( {
+            submitHandler: function(event) {
+                var email = $('[name=email]').val();
+                var password = $('[name=password]').val();
+                Meteor.loginWithPassword(email, password, function(error) {
+                    if (error) {
+                        if (error.reason == "User not found") {
+                            validator.showErrors( {
+                                email: "That email doesn't belong to a registered user."
+                            });
+                        }
+                        if (error.reason == "Incorrect password") {
+                            validator.showErrors( {
+                                password: "You entered an incorrect password."
+                            });
+                        }
+                    }
+                    else {
+                        Router.go('home');
+                    }
+                });
+            }
+        });
+    });
+
+    // Register prevent
+    Template.registerPage.events( {
+        'submit form': function() {
+            event.preventDefault();
+        }
+    });
+    // Validate register
+    Template.registerPage.onRendered(function() {
+        var validator = $('.register').validate( {
+            submitHandler: function(event) {
+                var email = $('[name=email]').val();
+                var password = $('[name=password]').val();
+                Accounts.createUser( {
+                    email: email,
+                    password: password
+                }, function(error) {
+                    if (error) {
+                        console.log(error.reason);
+                        if (error.reason == "Email already exists.") {
+                            validator.showErrors( {
+                                email: "That email already belongs to a registered user."
+                            });
+                        }
+                    }
+                    else {
+                        Router.go('home');
+                    }
+                });
+            }
+        });
+    });
+
+    // Logout
+    Template.navigation.events( {
+        'click .logout': function(event) {
+            event.preventDefault();
+            Meteor.logout();
+            Router.go('login');
+        }
+    });
 }
 
 if (Meteor.isServer) {

@@ -1,9 +1,76 @@
 <head>
-  <title>score-app</title>
+    <title>score-app</title>
 </head>
 
 <body>
-  <h1>Welcome to Meteor!</h1>
-
 </body>
 
+<!-- What is displayed on all pages -->
+<template name="main">
+    <h1>Tournaments</h1>
+    {{> navigation}}
+    {{> yield}}
+    <hr />
+    <p>Copyright &copy; Tournaments, 2015-2016.</p>
+</template>
+
+<!-- Home page -->
+<template name="homePage">
+    <p>Welcome to the Score App application</p>
+    {{> tournamentView}}
+</template>
+
+<!-- TournamentView -->
+<template name="tournamentView">
+    <h2>Tournaments</h2>
+    {{> addTournament}}
+    <ul>
+        {{#each tournament}}
+            {{> tournamentItem}}
+        {{/each}}
+    </ul>
+    {{> tournamentsCount}}
+</template>
+
+<!-- Each tournament has an own link -->
+<template name="tournamentItem">
+    <li><a href="{{pathFor route='tournamentPage'}}">{{name}}</a></li>
+</template>
+
+<!-- Count the number of tournaments and display it -->
+<template name="tournamentsCount">
+    {{#if totalTournaments}}
+        <p>Er zijn {{totalTournaments}} tournaments.</p>
+    {{/if}}
+</template>
+
+<!-- Register page -->
+<template name="registerPage">
+    <h2>Register</h2>
+</template>
+
+<!-- Login page -->
+<template name="loginPage">
+    <h2>Login</h2>
+</template>
+
+<!-- Navigation -->
+<template name="navigation">
+    <ul>
+        <li><a href="{{pathFor route='home'}}">Home</a></li>
+        <li><a href="{{pathFor route='register'}}">Register</a></li>
+        <li><a href="{{pathFor route='login'}}">Login</a></li>
+    </ul>
+</template>
+
+<!-- mag later weg, makkelijker tournaments toe te voegen -->
+<template name="addTournament">
+    <form>Maak een tournament:
+        <input type="text" placeholder="Tournament naam hier..." name="tournamentName">
+    </form>
+</template>
+
+<!-- Each tournament has an own page -->
+<template name="tournamentPage">
+    <h2>Tournament: {{name}}</h2>
+</template>

@@ -1,4 +1,6 @@
 Tournaments = new Meteor.Collection('tournaments');
+Games = new Meteor.Collection('games');
+Fields = new Meteor.Collection('fields');
 
 // Routes-----------------------------------------------------------------------
 Router.configure( {
@@ -228,5 +230,65 @@ if (Meteor.isServer) {
             };
             Tournaments.insert(data);
         }
+    });
+
+    var tid = 20019;
+    Meteor.methods({
+        updateTournament: function () {
+            this.unblock();
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/" + tid + "/");
+        },
+
+        updateTeams: function () {
+            this.unblock();
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
+        },
+        updateGames: function () {
+            this.unblock();
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
+        },
+        updateFields: function () {
+            this.unblock();
+            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid);
+        }
+    });
+    //  update tournaments
+    Meteor.call("updateTournament", function(error,results) {
+
+        if (Tournaments.find({id: results.data["id"]}).count()==0)
+        {
+            Tournaments.insert(
+                { name: results.data["name"], id: results.data["id"]}
+            );
+        }
+
+    });
+
+    // update games rounds
+    Meteor.call("updateGames", function(error,results) {
+        results.data["objects"].forEach(function (match) {
+            if (Games.find({id: match["id"]}).count()==0) {
+                Games.insert({   
+                    team_1_id:(match["team_1_id"]),
+                    team_2_id:(match["team_2_id"]),
+                    id:(match["id"]),
+                    game_site_id:(match["game_site_id"]),
+                    tournament_id:(match["tournament_id"]),
+                    start:(match["start_time"])}
+                );
+            }
+        });
+    });
+
+    Meteor.call('updateFields', function (error, results) {
+        results.data["objects"].forEach(function (event_site) {
+            if(Fields.find({id: event_site["id"]}).count()==0) {
+                Fields.insert({
+                    id: event_site["id"],
+                    name: event_site["name"],
+                    location: event_site["event_site"]["description"]
+                });
+            }
+        });
     });
 }

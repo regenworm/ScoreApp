@@ -46,7 +46,7 @@ Router.route('/login', {
 });
 Router.route('/tournament/:id', {
     name: 'tournament',
-    template: 'tournamentPage',
+    template: 'fieldView',
     data: function() {
         // Soms moet het met parseInt worden gedaan om onbekende redenen
         // Later testen met echte data om te kijken of het nog steeds voorkomt.
@@ -58,6 +58,24 @@ Router.route('/tournament/:id', {
         else {
             return Tournaments.findOne({id: parseInt(currentTournament)});
         }
+    },
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            this.next();
+        }
+        else {
+            Router.go('login');
+        }
+    }
+});
+Router.route('/field/:id', {
+    name: 'field',
+    template: 'fieldPage',
+    data: function() {
+        var currentField = parseInt(this.params["id"]);
+        var returnValue = Fields.findOne({id: currentField});
+        return returnValue;
     },
     onBeforeAction: function() {
         var currentUser = Meteor.userId();
@@ -85,6 +103,12 @@ if (Meteor.isClient) {
             return Tournaments.find().count();
         }
     });
+
+    Template.fieldView.helpers( {
+        'field': function() {
+            return Fields.find({}, {sort: {name: 1}});
+        }
+    })
 
     // mag later weg
     Template.addTournament.events( {
@@ -201,11 +225,15 @@ if (Meteor.isClient) {
         this.subscribe('tournaments');
     });
 
-    Template.tournamentPage.onCreated(function() {
+    Template.fieldView.onCreated(function() {
         this.subscribe('tournaments');
-        this.subscribe('games');
         this.subscribe('fields');
     });
+
+    Template.fieldPage.onCreated(function() {
+        this.subscribe('fields');
+        this.subscribe('games');
+    })
 }
 
 if (Meteor.isServer) {

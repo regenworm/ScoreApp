@@ -48,16 +48,8 @@ Router.route('/tournament/:id', {
     name: 'tournament',
     template: 'fieldView',
     data: function() {
-        // Soms moet het met parseInt worden gedaan om onbekende redenen
-        // Later testen met echte data om te kijken of het nog steeds voorkomt.
-        var currentTournament = this.params["id"];
-        var returnValue = Tournaments.findOne({id: currentTournament});
-        if (returnValue) {
-            return returnValue;
-        }
-        else {
-            return Tournaments.findOne({id: parseInt(currentTournament)});
-        }
+        var currentTournament = parseInt(this.params["id"]);
+        return Tournaments.findOne({id: currentTournament});
     },
     onBeforeAction: function() {
         var currentUser = Meteor.userId();
@@ -74,8 +66,7 @@ Router.route('/field/:id', {
     template: 'fieldPage',
     data: function() {
         var currentField = parseInt(this.params["id"]);
-        var returnValue = Fields.findOne({id: currentField});
-        return returnValue;
+        return Fields.findOne({id: currentField});
     },
     onBeforeAction: function() {
         var currentUser = Meteor.userId();
@@ -109,16 +100,6 @@ if (Meteor.isClient) {
             return Fields.find({}, {sort: {name: 1}});
         }
     })
-
-    // mag later weg
-    Template.addTournament.events( {
-        'submit form': function(event) {
-            event.preventDefault();
-            var tournamentName = $('[name=tournamentName]').val();
-            Meteor.call('createNewTournament', tournamentName);
-            $('[name=tournamentName]').val('');
-        }
-    });
 
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
@@ -254,23 +235,6 @@ if (Meteor.isServer) {
 
     // Methodes-----------------------------------------------------------------
     Meteor.methods( {
-        // Mag later weg
-        'createNewTournament': function(tournamentName) {
-            var currentUser = Meteor.userId();
-            if (!currentUser) {
-                throw new Meteor.Error("not-logged-in", "You're not logged in.");
-            }
-            check(tournamentName, String);
-            if (tournamentName == "") {
-                tournamentName = "Untitled";
-            }
-            var data = {
-                name: tournamentName, 
-                id: Math.floor(Math.random() * 10000) + 1
-            };
-            Tournaments.insert(data);
-        },
-
         updateTournament: function() {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/" + tid + "/");

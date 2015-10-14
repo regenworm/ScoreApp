@@ -23,7 +23,6 @@
 <!-- TournamentView -->
 <template name="tournamentView">
     <h2>Tournaments</h2>
-    {{> addTournament}}
     <ul>
         {{#if Template.subscriptionsReady}}
             {{#each tournament}}
@@ -103,13 +102,6 @@
             <li><a href="{{pathFor route='login'}}">Login</a></li>
         {{/if}}
     </ul>
-</template>
-
-<!-- mag later weg, makkelijker tournaments toe te voegen -->
-<template name="addTournament">
-    <form>Maak een tournament:
-        <input type="text" placeholder="Tournament naam hier..." name="tournamentName">
-    </form>
 </template>
 
 <!-- Loading -->

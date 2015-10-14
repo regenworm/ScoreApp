@@ -41,16 +41,16 @@
     <li><a href="{{pathFor route='tournament'}}">{{name}}</a></li>
 </template>
 
-<!-- Each tournament has an own page -->
-<template name="tournamentPage">
-    <h2>Tournament: {{name}}</h2>
-</template>
-
 <!-- Count the number of tournaments and display it -->
 <template name="tournamentsCount">
     {{#if totalTournaments}}
         <p>Er zijn {{totalTournaments}} tournaments.</p>
     {{/if}}
+</template>
+
+<!-- Each tournament has an own page -->
+<template name="tournamentPage">
+    <h2>Tournament: {{name}}</h2>
 </template>
 
 <!-- Register page -->

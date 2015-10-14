@@ -203,6 +203,8 @@ if (Meteor.isClient) {
 
     Template.tournamentPage.onCreated(function() {
         this.subscribe('tournaments');
+        this.subscribe('games');
+        this.subscribe('fields');
     });
 }
 
@@ -211,8 +213,16 @@ if (Meteor.isServer) {
 
     // Publishions--------------------------------------------------------------
     Meteor.publish('tournaments', function() {
-        return Tournaments.find()
+        return Tournaments.find();
     });
+
+    Meteor.publish('games', function() {
+        return Games.find();
+    })
+
+    Meteor.publish('fields', function() {
+        return Fields.find();
+    })
 
     // Methodes-----------------------------------------------------------------
     Meteor.methods( {
@@ -223,8 +233,8 @@ if (Meteor.isServer) {
                 throw new Meteor.Error("not-logged-in", "You're not logged in.");
             }
             check(tournamentName, String);
-            if (tournamentName =="") {
-                listname = "Untitled";
+            if (tournamentName == "") {
+                tournamentName = "Untitled";
             }
             var data = {
                 name: tournamentName, 
@@ -233,56 +243,57 @@ if (Meteor.isServer) {
             Tournaments.insert(data);
         },
 
-        updateTournament: function () {
+        updateTournament: function() {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/" + tid + "/");
         },
 
-        updateTeams: function () {
+        updateTeams: function() {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
         },
 
-        updateGames: function () {
+        updateGames: function() {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
         },
 
-        updateFields: function () {
+        updateFields: function() {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid);
         }
     });
-    //  update tournaments
-    Meteor.call("updateTournament", function (error,results) {
-        if (Tournaments.find({id: results.data["id"]}).count()==0)
-        {
-            Tournaments.insert(
-                { name: results.data["name"], id: results.data["id"]}
-            );
-        }
 
+    // Insert data which has not been inserted yet------------------------------
+    // Insert tournaments which are not in the db yet
+    Meteor.call("updateTournament", function(error,results) {
+        if (Tournaments.find({id: results.data["id"]}).count() == 0) {
+            Tournaments.insert({
+                id: results.data["id"], name: results.data["name"]
+            });
+        }
     });
 
-    // update games rounds
-    Meteor.call("updateGames", function (error,results) {
+    // Insert games rounds
+    Meteor.call("updateGames", function(error,results) {
         results.data["objects"].forEach(function (match) {
-            if (Games.find({id: match["id"]}).count()==0) {
-                Games.insert({   
+            if (Games.find({id: match["id"]}).count() == 0) {
+                Games.insert( {
+                    id:(match["id"]),
                     team_1_id:(match["team_1_id"]),
                     team_2_id:(match["team_2_id"]),
-                    id:(match["id"]),
                     game_site_id:(match["game_site_id"]),
                     tournament_id:(match["tournament_id"]),
-                    start:(match["start_time"])}
-                );
+                    start:(match["start_time"])
+                });
             }
         });
     });
 
-    Meteor.call('updateFields', function (error, results) {
+    // Insert fields
+    Meteor.call('updateFields', function(error, results) {
         results.data["objects"].forEach(function (event_site) {
-            if(Fields.find({id: event_site["id"]}).count()==0) {
+            if(Fields.find({id: event_site["id"]}).count() == 0) {
                 Fields.insert({
                     id: event_site["id"],
                     name: event_site["name"],
@@ -291,5 +302,4 @@ if (Meteor.isServer) {
             }
         });
     });
-
 }

@@ -233,7 +233,6 @@ if (Meteor.isServer) {
             return Fields.find();
         }
         else {
-            console.log(Fields.find({tournament_id: currentTournament}).count());
             return Fields.find({tournament_id: currentTournament});
         }
     });

@@ -102,20 +102,6 @@ if (Meteor.isClient) {
         }
     });
 
-    // toggle sidebar
-    Template.menu.events({
-        "click #sidebar-toggle": function (e) {
-            e.preventDefault();
-            var el = $('#wrapper');
-            if (!el.hasClass("open-sidebar")) {
-                el.addClass('open-sidebar')
-            } else {
-                el.removeClass('open-sidebar')
-            }
-
-        }
-    });
-
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
     $.validator.setDefaults( {
@@ -233,7 +219,7 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
-    var tid = 20019;
+    var tids = [19750, 19747, 20019];
 
     // Publishions--------------------------------------------------------------
     Meteor.publish('tournaments', function() {
@@ -250,69 +236,68 @@ if (Meteor.isServer) {
 
     // Methodes-----------------------------------------------------------------
     Meteor.methods( {
-        updateTournament: function() {
+        updateTournament: function(tid) {
             this.unblock();
-            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/" + tid + "/");
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/" + tid + "/");
+            if (Tournaments.find({id: results.data["id"]}).count() == 0) {
+                Tournaments.insert({
+                    id: results.data["id"], name: results.data["name"]
+                });
+            }
         },
 
-        updateTeams: function() {
+        updateTeams: function(tid) {
             this.unblock();
             return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
         },
 
-        updateGames: function() {
+        updateGames: function(tid) {
             this.unblock();
-            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
+            results.data["objects"].forEach(function (match) {
+                if (Games.find({id: match["id"]}).count() == 0) {
+                    Games.insert( {
+                        id:(match["id"]),
+                        team_1_id:(match["team_1_id"]),
+                        team_2_id:(match["team_2_id"]),
+                        game_site_id:(match["game_site_id"]),
+                        tournament_id:(match["tournament_id"]),
+                        start:(match["start_time"])
+                    });
+                }
+            });
         },
 
-        updateFields: function() {
+        updateFields: function(tid) {
             this.unblock();
-            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid);
-        }
-    });
-
-    // Insert data which has not been inserted yet------------------------------
-    // Insert tournaments which are not in the db yet
-    Meteor.call("updateTournament", function(error,results) {
-        if (Tournaments.find({id: results.data["id"]}).count() == 0) {
-            Tournaments.insert({
-                id: results.data["id"], name: results.data["name"]
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid);
+            results.data["objects"].forEach(function (event_site) {
+                if(Fields.find({id: event_site["id"]}).count() == 0) {
+                    var related_tournaments = [];
+                    Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
+                        related_tournaments.push(game["tournament_id"]);
+                    });
+                    Fields.insert({
+                        id: event_site["id"],
+                        name: event_site["name"],
+                        location: event_site["event_site"]["description"],
+                        tournament_id: related_tournaments
+                    });
+                }
             });
         }
     });
 
-    // Insert games rounds
-    Meteor.call("updateGames", function(error,results) {
-        results.data["objects"].forEach(function (match) {
-            if (Games.find({id: match["id"]}).count() == 0) {
-                Games.insert( {
-                    id:(match["id"]),
-                    team_1_id:(match["team_1_id"]),
-                    team_2_id:(match["team_2_id"]),
-                    game_site_id:(match["game_site_id"]),
-                    tournament_id:(match["tournament_id"]),
-                    start:(match["start_time"])
-                });
-            }
-        });
-    });
+    // Insert data which has not been inserted yet------------------------------
 
+    tids.forEach(function (tid) {
+        // Insert tournaments which are not in the db yet
+        Meteor.call('updateTournament', tid);
 
-    // Insert fields
-    Meteor.call('updateFields', function(error, results) {
-        results.data["objects"].forEach(function (event_site) {
-            if(Fields.find({id: event_site["id"]}).count() == 0) {
-                var related_tournaments = [];
-                Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
-                    related_tournaments.push(game["tournament_id"]);
-                });
-                Fields.insert({
-                    id: event_site["id"],
-                    name: event_site["name"],
-                    location: event_site["event_site"]["description"],
-                    tournaments: related_tournaments
-                });
-            }
-        });
+        // Insert games rounds
+        Meteor.call("updateGames", tid);
+
+        // Insert fields
+        Meteor.call('updateFields', tid);
     });
 }

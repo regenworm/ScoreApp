@@ -8,15 +8,27 @@
 
 <!-- What is displayed on all pages -->
 <template name="main">
-    <h1>Score App</h1>
-    {{> sidebar}}
-    {{> navigation}}
-    {{> yield}}
-    <hr />
-    <p>Copyright &copy; Tournaments, 2015-2016.</p>
+    <div id='wrapper' class="container">
+        <div id="sidebar">
+            <ul class="horizontalview">
+                <li><a href="/field1">Field 1</a></li>
+                <li><a href="/field2">Field 2</a></li>
+                <li><a href="/field3">Field 3</a></li>
+                <li>{{> loginButtons}} </li>
+            </ul>
+        </div>
+        <div class="info_view fieldview">
+            {{> toggle}}
+            <h1>Tournaments</h1>
+            {{> navigation}}
+            {{> yield}}
+            <hr />
+            <p>Copyright &copy; Tournaments, 2015-2016.</p>
+        </div>
+    </div>
 </template>
 
-<template name="sidebar">
+<template name="toggle">
     <button id="toggle">
         <span class="bar"></span>
         <span class="bar"></span>

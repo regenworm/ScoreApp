@@ -102,6 +102,20 @@ if (Meteor.isClient) {
         }
     });
 
+    // toggle sidebar
+    Template.menu.events({
+        "click #sidebar-toggle": function (e) {
+            e.preventDefault();
+            var el = $('#wrapper');
+            if (!el.hasClass("open-sidebar")) {
+                el.addClass('open-sidebar')
+            } else {
+                el.removeClass('open-sidebar')
+            }
+
+        }
+    });
+
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
     $.validator.setDefaults( {

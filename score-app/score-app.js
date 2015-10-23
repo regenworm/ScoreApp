@@ -5,8 +5,8 @@ Fields = new Meteor.Collection('fields');
 // Routes-----------------------------------------------------------------------
 Router.configure( {
     layoutTemplate: 'main',
-    loadingTemplate: 'loading'
-})
+    loadingTemplate: 'loading',
+});
 Router.route('/', {
     name: 'home',
     template: 'homePage',
@@ -95,11 +95,12 @@ if (Meteor.isClient) {
         }
     });
 
+    // Find all fields
     Template.fieldView.helpers( {
         'field': function() {
             return Fields.find({}, {sort: {name: 1}});
         }
-    })
+    });
 
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
@@ -214,7 +215,7 @@ if (Meteor.isClient) {
     Template.fieldPage.onCreated(function() {
         this.subscribe('fields');
         this.subscribe('games');
-    })
+    });
 }
 
 if (Meteor.isServer) {
@@ -227,11 +228,11 @@ if (Meteor.isServer) {
 
     Meteor.publish('games', function() {
         return Games.find();
-    })
+    });
 
     Meteor.publish('fields', function() {
         return Fields.find();
-    })
+    });
 
     // Methodes-----------------------------------------------------------------
     Meteor.methods( {

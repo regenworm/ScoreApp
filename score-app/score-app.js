@@ -1,6 +1,7 @@
-Tournaments = new Meteor.Collection('tournaments');
-Games = new Meteor.Collection('games');
-Fields = new Meteor.Collection('fields');
+var Tournaments = new Meteor.Collection('tournaments');
+var Games = new Meteor.Collection('games');
+var Fields = new Meteor.Collection('fields');
+var Teams = new Meteor.Collection('teams');
 
 // Routes-----------------------------------------------------------------------
 Router.configure( {
@@ -90,8 +91,15 @@ Router.route('/field/:id', {
             Meteor.subscribe('games')]
     }
 });
+// Auto-close the sidebar on route stop (when navigating to a new route)
+Router.onStop(function () {
+    if (slideout) {
+      slideout.close();
+    }
+})
 
 if (Meteor.isClient) {
+    var slideout;
     // Helper functions---------------------------------------------------------
     // Find all tournaments
     Template.tournamentView.helpers( {
@@ -112,6 +120,22 @@ if (Meteor.isClient) {
         'field': function() {
             return Fields.find({}, {sort: {name: 1}});
         }
+    });
+
+    Template.main.events({
+        'click #toggle': function (e) {
+            slideout.toggle();
+        }
+    });
+
+    Template.main.onRendered(function () {
+        var template = this;
+        slideout = new Slideout({
+            'panel': template.$('#content').get(0),
+            'menu': template.$('#slideout-menu').get(0),
+            'padding': 256,
+            'tolerance': 70
+        });
     });
 
     // Login, register and logout-----------------------------------------------
@@ -251,7 +275,8 @@ if (Meteor.isServer) {
 
         updateTeams: function(tid) {
             this.unblock();
-            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
+            // console.log(results.data);
         },
 
         updateGames: function(tid) {
@@ -302,5 +327,8 @@ if (Meteor.isServer) {
 
         // Insert fields
         Meteor.call('updateFields', tid);
+
+        // Insert
+        Meteor.call('updateTeams', tid);
     });
 }

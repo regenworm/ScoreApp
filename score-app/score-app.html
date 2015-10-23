@@ -1,5 +1,6 @@
 <head>
     <title>score-app</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>
@@ -8,10 +9,19 @@
 <!-- What is displayed on all pages -->
 <template name="main">
     <h1>Tournaments</h1>
+    {{> sidebar}}
     {{> navigation}}
     {{> yield}}
     <hr />
     <p>Copyright &copy; Tournaments, 2015-2016.</p>
+</template>
+
+<template name="sidebar">
+    <button id="toggle">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
 </template>
 
 <!-- Home page -->

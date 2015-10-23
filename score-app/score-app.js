@@ -282,14 +282,20 @@ if (Meteor.isServer) {
         });
     });
 
+
     // Insert fields
     Meteor.call('updateFields', function(error, results) {
         results.data["objects"].forEach(function (event_site) {
             if(Fields.find({id: event_site["id"]}).count() == 0) {
+                var related_tournaments = [];
+                Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
+                    related_tournaments.push(game["tournament_id"]);
+                });
                 Fields.insert({
                     id: event_site["id"],
                     name: event_site["name"],
-                    location: event_site["event_site"]["description"]
+                    location: event_site["event_site"]["description"],
+                    tournaments: related_tournaments
                 });
             }
         });

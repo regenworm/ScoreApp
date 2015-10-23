@@ -35,7 +35,7 @@
                 {{> tournamentItem}}
             {{/each}}
         {{else}}
-            <li>Loading...</li>
+            {{> loading}}
         {{/if}}
     </ul>
     {{> tournamentsCount}}
@@ -54,15 +54,15 @@
 </template>
 
 <!-- Each tournament has an own page with his fields -->
-<template name="fieldView">
-    <h2>Tournament: {{name}}</h2>
+<template name="fieldsView">
+    <h2>{{name}}</h2>
     <ul>
         {{#if Template.subscriptionsReady}}
             {{#each field}}
                 {{> fieldItem}}
             {{/each}}
         {{else}}
-            <li>Loading..</li>
+            {{> loading}}
         {{/if}}
     </ul>
 </template>
@@ -72,9 +72,28 @@
     <li><a href="{{pathFor route='field'}}">{{name}}</a></li>
 </template>
 
-<!-- Each field has an own page -->
-<template name="fieldPage">
-    <h2>Field: {{name}}</h2>
+<!-- Each field has an own page with his games -->
+<template name="gamesView">
+    <h2>{{name}}</h2>
+    <ul>
+        {{#if Template.subscriptionsReady}}
+            {{#each game}}
+                {{> gameItem}}
+            {{/each}}
+        {{else}}
+            <li>Loading..</li>
+        {{/if}}
+    </ul>
+</template>
+
+<!-- What happens on a game view -->
+<template name="gameView">
+</template>
+
+<!-- Each game has an own link -->
+<template name="gameItem">
+    <li><a href="{{pathFor route='game'}}">
+        {{team_1_id}} vs {{team_2_id}}</a></li>
 </template>
 
 <!-- Register page -->

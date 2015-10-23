@@ -49,7 +49,7 @@ Router.route('/login', {
 });
 Router.route('/tournament/:id', {
     name: 'tournament',
-    template: 'fieldView',
+    template: 'fieldsView',
     data: function() {
         var currentTournament = parseInt(this.params["id"]);
         return Tournaments.findOne({id: currentTournament});
@@ -71,7 +71,7 @@ Router.route('/tournament/:id', {
 });
 Router.route('/field/:id', {
     name: 'field',
-    template: 'fieldPage',
+    template: 'gamesView',
     data: function() {
         var currentField = parseInt(this.params["id"]);
         return Fields.findOne({id: currentField});
@@ -86,10 +86,31 @@ Router.route('/field/:id', {
         }
     },
     waitOn: function() {
+        var currentField = parseInt(this.params["id"]);
         return [Meteor.subscribe('fields', ""),
-            Meteor.subscribe('games')]
+            Meteor.subscribe('games', currentField)]
     }
 });
+Router.route('/game/:id', {
+    name: 'game',
+    template: 'gameView',
+    data: function() {
+        var currentGame = parseInt(this.params["id"]);
+        return Games.findOne({id: currentGame});
+    },
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            this.next();
+        }
+        else {
+            Router.go('login');
+        }
+    },
+    waitOn: function() {
+        return Meteor.subscribe('games')
+    }
+})
 
 if (Meteor.isClient) {
     // Helper functions---------------------------------------------------------
@@ -108,11 +129,18 @@ if (Meteor.isClient) {
     });
 
     // Find all fields
-    Template.fieldView.helpers( {
+    Template.fieldsView.helpers( {
         'field': function() {
             return Fields.find({}, {sort: {name: 1}});
         }
     });
+
+    // Find all games
+    Template.gamesView.helpers( {
+        'game': function() {
+            return Games.find({}, {sort: {name: 1}});
+        }
+    })
 
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
@@ -223,12 +251,11 @@ if (Meteor.isServer) {
         return Tournaments.find();
     });
 
-    Meteor.publish('games', function() {
-        return Games.find();
+    Meteor.publish('games', function(currentField) {
+        return Games.find({game_site_id: currentField});
     });
 
     Meteor.publish('fields', function(currentTournament) {
-        console.log(currentTournament);
         if (currentTournament == "") {
             return Fields.find();
         }

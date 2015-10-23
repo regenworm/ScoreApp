@@ -1,6 +1,7 @@
-Tournaments = new Meteor.Collection('tournaments');
-Games = new Meteor.Collection('games');
-Fields = new Meteor.Collection('fields');
+var Tournaments = new Meteor.Collection('tournaments');
+var Games = new Meteor.Collection('games');
+var Fields = new Meteor.Collection('fields');
+var Teams = new Meteor.Collection('teams');
 
 // Routes-----------------------------------------------------------------------
 Router.configure( {
@@ -110,7 +111,13 @@ Router.route('/game/:id', {
     waitOn: function() {
         return Meteor.subscribe('games')
     }
-})
+});
+// Auto-close the sidebar on route stop (when navigating to a new route)
+Router.onStop(function () {
+    if (slideout) {
+      slideout.close();
+    }
+});
 
 if (Meteor.isClient) {
     // Helper functions---------------------------------------------------------
@@ -140,7 +147,27 @@ if (Meteor.isClient) {
         'game': function() {
             return Games.find({}, {sort: {name: 1}});
         }
-    })
+    });
+
+    // Sidebar------------------------------------------------------------------
+    var slideout;
+    // Sidebar toggle
+    Template.main.events({
+        'click #toggle': function (e) {
+            slideout.toggle();
+        }
+    });
+
+    // Sidebar instance initialisation
+    Template.main.onRendered(function () {
+        var template = this;
+        slideout = new Slideout({
+            'panel': template.$('#content').get(0),
+            'menu': template.$('#slideout-menu').get(0),
+            'padding': 256,
+            'tolerance': 70
+        });
+    });
 
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
@@ -244,8 +271,6 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
-    var tids = [19750, 19747, 20019];
-
     // Publishions--------------------------------------------------------------
     Meteor.publish('tournaments', function() {
         return Tournaments.find();
@@ -278,7 +303,8 @@ if (Meteor.isServer) {
 
         updateTeams: function(tid) {
             this.unblock();
-            return Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
+            // console.log(results.data);
         },
 
         updateGames: function(tid) {
@@ -319,7 +345,7 @@ if (Meteor.isServer) {
     });
 
     // Insert data which has not been inserted yet------------------------------
-
+    var tids = [19750, 19747, 20019];
     tids.forEach(function (tid) {
         // Insert tournaments which are not in the db yet
         Meteor.call('updateTournament', tid);
@@ -329,5 +355,8 @@ if (Meteor.isServer) {
 
         // Insert fields
         Meteor.call('updateFields', tid);
+
+        // Insert
+        Meteor.call('updateTeams', tid);
     });
 }

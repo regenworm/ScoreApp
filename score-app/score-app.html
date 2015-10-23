@@ -12,11 +12,29 @@
 
 <!-- What is displayed on all pages -->
 <template name="main">
-    <h1>Tournaments</h1>
-    {{> navigation}}
-    {{> yield}}
-    <hr />
-    <p>Copyright &copy; Tournaments, 2015-2016.</p>
+    <div id="slideout-menu">
+        <strong>Menu</strong>
+        <br />
+        <ul>
+            {{#if Template.subscriptionsReady}}
+                {{#each tournament}}
+                    {{> tournamentItem}}
+                {{/each}}
+            {{else}}
+                <li>Loading...</li>
+            {{/if}}
+        </ul>
+    </div>
+    <div id="content">
+        <button id="toggle">
+            <i class="fa fa-bars"></i>
+        </button>
+        <h1>Tournaments</h1>
+        {{> navigation}}
+        {{> yield}}
+        <hr />
+        <p>Copyright &copy; Tournaments, 2015-2016.</p>
+    </div>
 </template>
 
 

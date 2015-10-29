@@ -374,12 +374,10 @@ if (Meteor.isServer) {
             this.unblock();
             var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
             while (true) {
-                console.log(tid);
                 results.data["objects"].forEach(function (match) {
                     if (Games.find({id: match["id"]}).count() == 0) {
                         var team1temp = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/?team_ids=%5B"+ match["team_1_id"]+ "%5D");
                         // var team2 = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/"+ match["team_2_id"])["name"];
-                        // console.log(match["team_1_id"]);
                         currentgame = {
                             id: null,
                             team_1_id: null,
@@ -395,31 +393,36 @@ if (Meteor.isServer) {
                         values = ["id","team_1_id","team_1_score","team_2_id","team_2_name","team_2_score","game_site_id","tournament_id","start"];
                         // if important values are uninitialised, set to onbekend
                         for (i=0; i < values.length; i++){
-                            try {
-                                currentgame[values[i]] = match[values[i]];
-                            } catch(err) {
+                            var value = match[values[i]];
+                            if ((value !== null) && (typeof(value) !== "undefined")) {
+                                currentgame[values[i]] = value;
+                            }
+                            else {
                                 currentgame[values[i]] = "Onbekend";
                             }
                         }
-                        try {
-                            currentgame["team_1_name"] = match["team_1"]["name"];
-                        } catch(err) {
+                        var team_1_name = match["team_1"]["name"];
+                        if ((team_1_name !== null) && (typeof(team_1_name) !== "undefined")) {
+                            currentgame["team_1_name"] = team_1_name;
+                        }
+                        else {
                             currentgame["team_1_name"] = "Onbekend";
                         }
-                        try {
-                            currentgame["team_2_name"] = match["team_2"]["name"];
-                        } catch(err) {
+                        var team_2_name = match["team_2"]["name"];
+                        if ((team_2_name !== null) && (typeof(team_2_name) !== "undefined")) {
+                            currentgame["team_2_name"] = team_2_name;
+                        }
+                        else {
                             currentgame["team_2_name"] = "Onbekend";
                         }
 
-                        Games.insert( currentgame);
+                        Games.insert(currentgame);
                     }
                 });
                 if (results.data["meta"]["next"] === null) {
                     break;
-                } else {
-                    results = Meteor.http.call("GET", results.data["meta"]["next"]);
                 }
+                results = Meteor.http.call("GET", results.data["meta"]["next"]);
             }
         },
 
@@ -444,9 +447,8 @@ if (Meteor.isServer) {
                 });
                 if (results.data["meta"]["next"] === null) {
                     break;
-                } else {
-                    results = Meteor.http.call("GET", results.data["meta"]["next"]);
-                }  
+                } 
+                results = Meteor.http.call("GET", results.data["meta"]["next"]);
             }
         }
     });

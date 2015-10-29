@@ -1,12 +1,13 @@
 var Tournaments = new Meteor.Collection('tournaments');
 var Games = new Meteor.Collection('games');
 var Fields = new Meteor.Collection('fields');
-var Teams = new Meteor.Collection('teams');
 
 // Routes-----------------------------------------------------------------------
+// Ignore links with skipIr
 Router.configure( {
     layoutTemplate: 'main',
     loadingTemplate: 'loading',
+    linkSelector: 'a[href], a:not([skipir])'
 });
 Router.route('/', {
     name: 'home',
@@ -113,12 +114,13 @@ Router.route('/game/:id', {
         return Meteor.subscribe('games', "", currentGame)
     }
 });
+
 // Auto-close the sidebar on route stop (when navigating to a new route)
-Router.onStop(function () {
-    if (slideout) {
-      slideout.close();
-    }
-});
+// Router.onStop(function () {
+//     if (slideout) {
+//       slideout.close();
+//     }
+// });
 
 if (Meteor.isClient) {
     // Helper functions---------------------------------------------------------
@@ -128,6 +130,39 @@ if (Meteor.isClient) {
             return Tournaments.find({}, {sort: {name: 1}});
         }
     });
+
+    // Find all tournaments
+    Template.menuItems.helpers( {
+        'tournament': function() {
+            return Tournaments.find({}, {sort: {name: 1}});
+        }
+    });
+
+    // ------------------------------------------
+    //  werkt nog niet
+    // Find all fields related to tournaments
+    Template.menuTournament.helpers( {
+        'field': function () {
+            return Fields.find({tournament_id: this.id});
+        }
+    });
+
+    Template.menuTournament.events({
+        'click .menuItems': function (e) {
+            e.preventDefault();
+        }
+    });
+    // -------------------------------------------
+
+    Template.menuTournament.events({
+        'click .menu': function (e) {
+            e.preventDefault();
+            console.log(e.target);
+            console.log(e.id);
+            Session.set('tournament_id', e.target);
+        }
+    });
+
 
     // Count tournaments
     Template.tournamentsCount.helpers( {
@@ -272,6 +307,14 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
+    // easy db reset
+    if (true) {
+        Games.remove({});
+        Tournaments.remove({});
+        Fields.remove({});
+    }
+
+
     // Publishions--------------------------------------------------------------
     Meteor.publish('tournaments', function() {
         return Tournaments.find();
@@ -310,48 +353,106 @@ if (Meteor.isServer) {
         updateTeams: function(tid) {
             this.unblock();
             var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
-            // console.log(results.data);
-        },
-
-        updateGames: function(tid) {
-            this.unblock();
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
-            results.data["objects"].forEach(function (match) {
-                if (Games.find({id: match["id"]}).count() == 0) {
+            results.data["objects"].forEach(function (team) {
+                if (Games.find({id: team["id"]}).count() == 0) {
                     Games.insert( {
-                        id:(match["id"]),
-                        team_1_id:(match["team_1_id"]),
-                        team_2_id:(match["team_2_id"]),
-                        game_site_id:(match["game_site_id"]),
-                        tournament_id:(match["tournament_id"]),
-                        start:(match["start_time"])
+                        id: team["id"],
+                        name: team["team"]["name"],
+                        team_2_id: match["team_2_id"],
+                        game_site_id: match["game_site_id"],
+                        tournament_id: match["tournament_id"],
+                        start: match["start_time"]
                     });
                 }
             });
+        },
+
+        // score elke minuut checken op leaguevine
+        // refresh triggeren als iemand op gamepagina zit
+        // aan de id van een object kijken hoe oud het is
+        updateGames: function(tid) {
+            this.unblock();
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
+            while (true) {
+                console.log(tid);
+                results.data["objects"].forEach(function (match) {
+                    if (Games.find({id: match["id"]}).count() == 0) {
+                        var team1temp = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/?team_ids=%5B"+ match["team_1_id"]+ "%5D");
+                        // var team2 = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/"+ match["team_2_id"])["name"];
+                        // console.log(match["team_1_id"]);
+                        currentgame = {
+                            id: null,
+                            team_1_id: null,
+                            team_1_name: null,
+                            team_1_score: null,
+                            team_2_id: null,
+                            team_2_name: null,
+                            team_2_score: null,
+                            game_site_id: null,
+                            tournament_id: null,
+                            start: null
+                        }
+                        values = ["id","team_1_id","team_1_score","team_2_id","team_2_name","team_2_score","game_site_id","tournament_id","start"];
+                        // if important values are uninitialised, set to onbekend
+                        for (i=0; i < values.length; i++){
+                            try {
+                                currentgame[values[i]] = match[values[i]];
+                            } catch(err) {
+                                currentgame[values[i]] = "Onbekend";
+                            }
+                        }
+                        try {
+                            currentgame["team_1_name"] = match["team_1"]["name"];
+                        } catch(err) {
+                            currentgame["team_1_name"] = "Onbekend";
+                        }
+                        try {
+                            currentgame["team_2_name"] = match["team_2"]["name"];
+                        } catch(err) {
+                            currentgame["team_2_name"] = "Onbekend";
+                        }
+
+                        Games.insert( currentgame);
+                    }
+                });
+                if (results.data["meta"]["next"] === null) {
+                    break;
+                } else {
+                    results = Meteor.http.call("GET", results.data["meta"]["next"]);
+                }
+            }
         },
 
         updateFields: function(tid) {
             this.unblock();
             var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid);
-            results.data["objects"].forEach(function (event_site) {
-                if(Fields.find({id: event_site["id"]}).count() == 0) {
-                    var related_tournaments = [];
-                    Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
-                        related_tournaments.push(game["tournament_id"]);
-                    });
-                    Fields.insert({
-                        id: event_site["id"],
-                        name: event_site["name"],
-                        location: event_site["event_site"]["description"],
-                        tournament_id: related_tournaments
-                    });
-                }
-            });
+
+            while (true) {
+                results.data["objects"].forEach(function (event_site) {
+                    if(Fields.find({id: event_site["id"]}).count() == 0) {
+                        var related_tournaments = [];
+                        Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
+                            related_tournaments.push(game["tournament_id"]);
+                        });
+                        Fields.insert({
+                            id: event_site["id"],
+                            name: event_site["name"],
+                            location: event_site["event_site"]["description"],
+                            tournament_id: related_tournaments
+                        });
+                    }
+                });
+                if (results.data["meta"]["next"] === null) {
+                    break;
+                } else {
+                    results = Meteor.http.call("GET", results.data["meta"]["next"]);
+                }  
+            }
         }
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [19750, 19747, 20019];
+    var tids = [20019];//19750, 19747, 20019];
     tids.forEach(function (tid) {
         // Insert tournaments which are not in the db yet
         Meteor.call('updateTournament', tid);
@@ -361,8 +462,5 @@ if (Meteor.isServer) {
 
         // Insert fields
         Meteor.call('updateFields', tid);
-
-        // Insert
-        Meteor.call('updateTeams', tid);
     });
 }

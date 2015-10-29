@@ -56,3 +56,7 @@ html, body {
 #centerDiv {
     text-align: center;
 }
+
+#registerInput {
+    width: 250px;
+}

@@ -188,15 +188,15 @@
 <!-- Each game has an own link -->
 <template name="gameItem">
     <li><a href="{{pathFor route='game'}}">
-        {{team_1_id}} vs {{team_2_id}}</a></li>
+        {{team_1_name}} vs {{team_2_name}}</a></li>
 </template>
 
 <!-- Register page -->
 <template name="registerPage">
     <h2>Register</h2>
     <form class="register">
-        <p>Email: <input type="email" name="email" required></p>
-        <p>Password: <input type="password" name="password" required></p>
+        <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
+        <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
         <p><input type="submit" value="Register"></p>
     </form>
 </template>
@@ -205,8 +205,8 @@
 <template name="loginPage">
     <h2>Login</h2>
     <form class="login">
-        <p>Email: <input type="email" name="email" required></p>
-        <p>Password: <input type="password" name="password" required></p>
+        <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
+        <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
         <p><input type="submit" value="Login"></p>
     </form>
 </template>

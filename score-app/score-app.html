@@ -31,7 +31,7 @@
 
 <!-- menu items in sidebar -->
 <template name="menuItems">
-    <ul>
+    <ul id="nav">
         <li><a href="/">Home</a></li>
         {{#if Template.subscriptionsReady}}
             {{#each tournament}}
@@ -52,11 +52,22 @@
 <!-- menu tournament items -->
 <template name="menuTournament">
     <li>
-        <a href="{{pathFor route='tournament'}}" class="menuItem" skipir>{{name}}</a> 
-        <ul>
+<!--         <a href="{{pathFor route='tournament'}}" class="menuItem" skipir>{{name}}</a>  -->
+        <div class="parent">{{name}}</div>
+        <ul class="sub-nav">
+            asdasd
             {{#each field}}
-                {{> fieldItem tournamentId=tournament}}
+                {{> menuField}}
             {{/each}}
+        </ul>
+    </li>
+</template>
+
+<template name="menuField">
+    <li>
+        <div class="parent2">{{name}}</div>
+        <ul class="sub-nav2">
+            asd
         </ul>
     </li>
 </template>

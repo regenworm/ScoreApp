@@ -60,3 +60,19 @@ html, body {
 #registerInput {
     width: 250px;
 }
+
+#nav ul.sub-nav {
+    display: none;
+}
+
+#nav ul.visible {
+    display: block;
+}
+
+#nav ul.sub-nav2 {
+    display: none;
+}
+
+#nav ul.visible2 {
+    display: block;
+}

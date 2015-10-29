@@ -22,7 +22,9 @@ Router.route('/', {
         }
     },
     waitOn: function() {
-        return Meteor.subscribe('tournaments');
+        return [Meteor.subscribe('tournaments'), 
+                Meteor.subscribe('fields'),
+                Meteor.subscribe('games')];
     }
 });
 Router.route('/register', {
@@ -147,21 +149,14 @@ if (Meteor.isClient) {
         }
     });
 
-    Template.menuTournament.events({
-        'click .menuItems': function (e) {
-            e.preventDefault();
+    Template.menuTournament.events( {
+        'click .parent': function() {
+            $('.sub-nav').slideToggle();
         }
-    });
-    // -------------------------------------------
-
-    Template.menuTournament.events({
-        'click .menu': function (e) {
-            e.preventDefault();
-            console.log(e.target);
-            console.log(e.id);
-            Session.set('tournament_id', e.target);
+        'click .parent2': function() {
+            $('.sub-nav2').slideToggle();
         }
-    });
+    })
 
 
     // Count tournaments
@@ -326,6 +321,9 @@ if (Meteor.isServer) {
         }
         else if (currentGame != "") {
             return Games.find({id: currentGame});
+        }
+        else {
+            return Games.find();
         }
     });
 

@@ -89,7 +89,7 @@ Router.route('/field/:id', {
     waitOn: function() {
         var currentField = parseInt(this.params["id"]);
         return [Meteor.subscribe('fields', ""),
-            Meteor.subscribe('games', currentField)]
+            Meteor.subscribe('games', currentField, "")]
     }
 });
 Router.route('/game/:id', {
@@ -109,7 +109,8 @@ Router.route('/game/:id', {
         }
     },
     waitOn: function() {
-        return Meteor.subscribe('games')
+        var currentGame = parseInt(this.params["id"]);
+        return Meteor.subscribe('games', "", currentGame)
     }
 });
 // Auto-close the sidebar on route stop (when navigating to a new route)
@@ -276,8 +277,13 @@ if (Meteor.isServer) {
         return Tournaments.find();
     });
 
-    Meteor.publish('games', function(currentField) {
-        return Games.find({game_site_id: currentField});
+    Meteor.publish('games', function(currentField, currentGame) {
+        if (currentField != "") {
+            return Games.find({game_site_id: currentField});
+        }
+        else if (currentGame != "") {
+            return Games.find({id: currentGame});
+        }
     });
 
     Meteor.publish('fields', function(currentTournament) {

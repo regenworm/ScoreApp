@@ -15,15 +15,7 @@
     <div id="slideout-menu">
         <strong>Menu</strong>
         <br />
-        <ul>
-            {{#if Template.subscriptionsReady}}
-                {{#each tournament}}
-                    {{> tournamentItem}}
-                {{/each}}
-            {{else}}
-                <li>Loading...</li>
-            {{/if}}
-        </ul>
+        {{> menuItems}}
     </div>
     <div id="content">
         <button id="toggle">
@@ -37,6 +29,37 @@
     </div>
 </template>
 
+<!-- menu items in sidebar -->
+<template name="menuItems">
+    <ul>
+        <li><a href="/">Home</a></li>
+        {{#if Template.subscriptionsReady}}
+            {{#each tournament}}
+                {{> menuTournament}}
+            {{/each}}
+        {{else}}
+            {{> loading}}
+        {{/if}}
+        {{#if currentUser}}
+            <li><a href="#" class="logout">Logout</a></li>
+        {{else}}
+            <li><a href="{{pathFor route='register'}}">Register</a></li>
+            <li><a href="{{pathFor route='login'}}">Login</a></li>
+        {{/if}}
+    </ul>
+</template>
+
+<!-- menu tournament items -->
+<template name="menuTournament">
+    <li>
+        <a href="{{pathFor route='tournament'}}" class="menuItem" skipir>{{name}}</a> 
+        <ul>
+            {{#each field}}
+                {{> fieldItem tournamentId=tournament}}
+            {{/each}}
+        </ul>
+    </li>
+</template>
 
 <!-- Home page -->
 <template name="homePage">
@@ -61,7 +84,8 @@
 
 <!-- Each tournament has an own link -->
 <template name="tournamentItem">
-    <li><a href="{{pathFor route='tournament'}}">{{name}}</a></li>
+    <li><a href="{{pathFor route='tournament'}}">{{name}}</a> 
+    </li>
 </template>
 
 <!-- Count the number of tournaments and display it -->

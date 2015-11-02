@@ -80,6 +80,18 @@ Router.onStop(function () {
 });
 
 if (Meteor.isClient) {
+    Template.gameView.events({
+        'click #gps': function() {
+            console.log("message");
+            Location.locate(function(pos){
+               console.log("Got a position!", pos);
+            }, function(err){
+               console.log("Oops! There was an error", err);
+            });
+        }
+    });
+
+
     // Helper functions---------------------------------------------------------
     // Find all tournaments
     Template.menuItems.helpers( {

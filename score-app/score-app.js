@@ -3,11 +3,9 @@ var Games = new Meteor.Collection('games');
 var Fields = new Meteor.Collection('fields');
 
 // Routes-----------------------------------------------------------------------
-// Ignore links with skipIr
 Router.configure( {
     layoutTemplate: 'main',
-    loadingTemplate: 'loading',
-    linkSelector: 'a[href], a:not([skipir])'
+    loadingTemplate: 'loading'
 });
 Router.route('/', {
     name: 'home',
@@ -141,7 +139,6 @@ if (Meteor.isClient) {
     });
 
     // ------------------------------------------
-    //  werkt nog niet
     // Find all fields related to tournaments
     Template.menuTournament.helpers( {
         'field': function () {
@@ -152,11 +149,11 @@ if (Meteor.isClient) {
     Template.menuTournament.events( {
         'click .parent': function() {
             $('.sub-nav').slideToggle();
-        }
+        },
         'click .parent2': function() {
             $('.sub-nav2').slideToggle();
         }
-    })
+    });
 
 
     // Count tournaments

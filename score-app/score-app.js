@@ -73,11 +73,11 @@ Router.route('/game/:id', {
 });
 
 // Auto-close the sidebar on route stop (when navigating to a new route)
-// Router.onStop(function () {
-//     if (slideout) {
-//       slideout.close();
-//     }
-// });
+Router.onStop(function () {
+    if (slideout) {
+      slideout.close();
+    }
+});
 
 if (Meteor.isClient) {
     // Helper functions---------------------------------------------------------
@@ -138,7 +138,7 @@ if (Meteor.isClient) {
         slideout = new Slideout({
             'panel': template.$('#content').get(0),
             'menu': template.$('#slideout-menu').get(0),
-            'padding': 256,
+            'padding': 600,
             'tolerance': 70
         });
     });

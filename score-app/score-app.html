@@ -21,8 +21,7 @@
         <button id="toggle">
             <i class="fa fa-bars"></i>
         </button>
-        <h1>Tournaments</h1>
-        {{> navigation}}
+        <h1>Score App</h1>
         {{> yield}}
         <hr />
         <p>Copyright &copy; Tournaments, 2015-2016.</p>
@@ -67,7 +66,7 @@
         <div class="field">{{name}}</div>
         <ul class="sub-nav2">
             {{#each game}}
-                {{team_1_name}} vs {{team_2_name}}
+                <li><a href="{{pathFor route='game'}}">                    {{team_1_name}} vs {{team_2_name}}</a></li>
             {{/each}}
         </ul>
     </li>
@@ -75,61 +74,7 @@
 
 <!-- Home page -->
 <template name="homePage">
-    <p>Welcome to the Score App application</p>
-    {{> tournamentView}}
-</template>
-
-<!-- TournamentView -->
-<template name="tournamentView">
-    <h2>Tournaments</h2>
-    <ul>
-        {{#if Template.subscriptionsReady}}
-            {{#each tournament}}
-                {{> tournamentItem}}
-            {{/each}}
-        {{else}}
-            {{> loading}}
-        {{/if}}
-    </ul>
-</template>
-
-<!-- Each tournament has an own link -->
-<template name="tournamentItem">
-    <li><a href="{{pathFor route='tournament'}}">{{name}}</a> 
-    </li>
-</template>
-
-<!-- Each tournament has an own page with his fields -->
-<template name="fieldsView">
-    <h2>{{name}}</h2>
-    <ul>
-        {{#if Template.subscriptionsReady}}
-            {{#each field}}
-                {{> fieldItem}}
-            {{/each}}
-        {{else}}
-            {{> loading}}
-        {{/if}}
-    </ul>
-</template>
-
-<!-- Each field has an own link -->
-<template name="fieldItem">
-    <li><a href="{{pathFor route='field'}}">{{name}}</a></li>
-</template>
-
-<!-- Each field has an own page with his games -->
-<template name="gamesView">
-    <h2>{{name}}</h2>
-    <ul>
-        {{#if Template.subscriptionsReady}}
-            {{#each game}}
-                {{> gameItem}}
-            {{/each}}
-        {{else}}
-            <li>Loading..</li>
-        {{/if}}
-    </ul>
+    <p>HomePage</p>
 </template>
 
 <!-- What happens on a game view -->
@@ -189,12 +134,6 @@
     </div>
 </template>
 
-<!-- Each game has an own link -->
-<template name="gameItem">
-    <li><a href="{{pathFor route='game'}}">
-        {{team_1_name}} vs {{team_2_name}}</a></li>
-</template>
-
 <!-- Register page -->
 <template name="registerPage">
     <h2>Register</h2>
@@ -213,19 +152,6 @@
         <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
         <p><input type="submit" value="Login"></p>
     </form>
-</template>
-
-<!-- Navigation -->
-<template name="navigation">
-    <ul>
-        <li><a href="{{pathFor route='home'}}">Home</a></li>
-        {{#if currentUser}}
-            <li><a href="#" class="logout">Logout</a></li>
-        {{else}}
-            <li><a href="{{pathFor route='register'}}">Register</a></li>
-            <li><a href="{{pathFor route='login'}}">Login</a></li>
-        {{/if}}
-    </ul>
 </template>
 
 <!-- Loading -->

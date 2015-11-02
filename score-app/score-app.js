@@ -49,50 +49,6 @@ Router.route('/login', {
         }
     }
 });
-Router.route('/tournament/:id', {
-    name: 'tournament',
-    template: 'fieldsView',
-    data: function() {
-        var currentTournament = parseInt(this.params["id"]);
-        return Tournaments.findOne({id: currentTournament});
-    },
-    onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
-            this.next();
-        }
-        else {
-            Router.go('login');
-        }
-    },
-    waitOn: function() {
-        var currentTournament = parseInt(this.params["id"]);
-        return [Meteor.subscribe('tournaments'), 
-            Meteor.subscribe('fields', currentTournament)]
-    }
-});
-Router.route('/field/:id', {
-    name: 'field',
-    template: 'gamesView',
-    data: function() {
-        var currentField = parseInt(this.params["id"]);
-        return Fields.findOne({id: currentField});
-    },
-    onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
-            this.next();
-        }
-        else {
-            Router.go('login');
-        }
-    },
-    waitOn: function() {
-        var currentField = parseInt(this.params["id"]);
-        return [Meteor.subscribe('fields', ""),
-            Meteor.subscribe('games', currentField, "")]
-    }
-});
 Router.route('/game/:id', {
     name: 'game',
     template: 'gameView',
@@ -125,20 +81,21 @@ Router.route('/game/:id', {
 if (Meteor.isClient) {
     // Helper functions---------------------------------------------------------
     // Find all tournaments
-    Template.tournamentView.helpers( {
-        'tournament': function() {
-            return Tournaments.find({}, {sort: {name: 1}});
-        }
-    });
-
-    // Find all tournaments
     Template.menuItems.helpers( {
         'tournament': function() {
             return Tournaments.find({}, {sort: {name: 1}});
         }
     });
 
-    // ------------------------------------------
+    Template.menuItems.events( {
+        'click .logout': function(event) {
+            event.preventDefault();
+            Meteor.logout();
+            Router.go('login');
+        }
+    });
+
+    // -------------------------------------------------------------------------
     // Find all fields related to tournaments
     Template.menuTournament.helpers( {
         'field': function() {
@@ -157,22 +114,7 @@ if (Meteor.isClient) {
 
     Template.menuField.helpers( {
         'game': function() {
-            console.log(this.id);
             return Games.find({game_site_id: this.id});
-        }
-    });
-
-    // Find all fields
-    Template.fieldsView.helpers( {
-        'field': function() {
-            return Fields.find({}, {sort: {name: 1}});
-        }
-    });
-
-    // Find all games
-    Template.gamesView.helpers( {
-        'game': function() {
-            return Games.find({}, {sort: {name: 1}});
         }
     });
 
@@ -285,15 +227,6 @@ if (Meteor.isClient) {
                 });
             }
         });
-    });
-
-    // Logout
-    Template.navigation.events( {
-        'click .logout': function(event) {
-            event.preventDefault();
-            Meteor.logout();
-            Router.go('login');
-        }
     });
 }
 

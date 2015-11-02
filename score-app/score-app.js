@@ -141,7 +141,8 @@ if (Meteor.isClient) {
     // ------------------------------------------
     // Find all fields related to tournaments
     Template.menuTournament.helpers( {
-        'field': function () {
+        'field': function (as) {
+            console.log(as);
             return Fields.find({tournament_id: this.id});
         }
     });

@@ -141,26 +141,24 @@ if (Meteor.isClient) {
     // ------------------------------------------
     // Find all fields related to tournaments
     Template.menuTournament.helpers( {
-        'field': function (as) {
-            console.log(as);
+        'field': function() {
             return Fields.find({tournament_id: this.id});
         }
     });
 
     Template.menuTournament.events( {
-        'click .parent': function() {
-            $('.sub-nav').slideToggle();
+        'click .tournament': function() {
+            $(event.target).siblings().slideToggle();
         },
-        'click .parent2': function() {
-            $('.sub-nav2').slideToggle();
+        'click .field': function() {
+            $(event.target).siblings().slideToggle();
         }
     });
 
-
-    // Count tournaments
-    Template.tournamentsCount.helpers( {
-        'totalTournaments': function() {
-            return Tournaments.find().count();
+    Template.menuField.helpers( {
+        'game': function() {
+            console.log(this.id);
+            return Games.find({game_site_id: this.id});
         }
     });
 

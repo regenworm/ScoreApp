@@ -53,10 +53,9 @@
 <template name="menuTournament">
     <li>
 <!--         <a href="{{pathFor route='tournament'}}" class="menuItem" skipir>{{name}}</a>  -->
-        <div class="parent">{{name}}</div>
+        <div class="tournament">{{name}}</div>
         <ul class="sub-nav">
-            asdasd
-            {{#each field id}}
+            {{#each field}}
                 {{> menuField}}
             {{/each}}
         </ul>
@@ -65,9 +64,11 @@
 
 <template name="menuField">
     <li>
-        <div class="parent2">{{name}}</div>
+        <div class="field">{{name}}</div>
         <ul class="sub-nav2">
-            asd
+            {{#each game}}
+                {{team_1_name}} vs {{team_2_name}}
+            {{/each}}
         </ul>
     </li>
 </template>
@@ -90,20 +91,12 @@
             {{> loading}}
         {{/if}}
     </ul>
-    {{> tournamentsCount}}
 </template>
 
 <!-- Each tournament has an own link -->
 <template name="tournamentItem">
     <li><a href="{{pathFor route='tournament'}}">{{name}}</a> 
     </li>
-</template>
-
-<!-- Count the number of tournaments and display it -->
-<template name="tournamentsCount">
-    {{#if totalTournaments}}
-        <p>Er zijn {{totalTournaments}} tournaments.</p>
-    {{/if}}
 </template>
 
 <!-- Each tournament has an own page with his fields -->

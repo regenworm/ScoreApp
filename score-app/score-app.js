@@ -20,6 +20,7 @@ Router.route('/', {
         }
     },
     waitOn: function() {
+        console.log("asd");
         return [Meteor.subscribe('tournaments'), 
                 Meteor.subscribe('fields'),
                 Meteor.subscribe('games')];
@@ -65,11 +66,6 @@ Router.route('/game/:id', {
             Router.go('login');
         }
     }
-    // },
-    // waitOn: function() {
-    //     var currentGame = parseInt(this.params["id"]);
-    //     return Meteor.subscribe('games', "", currentGame)
-    // }
 });
 
 // Auto-close the sidebar on route stop (when navigating to a new route)
@@ -249,20 +245,12 @@ if (Meteor.isServer) {
         return Tournaments.find();
     });
 
-    Meteor.publish('games', function(currentField, currentGame) {
-        if (currentField != "") {
-            return Games.find({game_site_id: currentField});
-        }
-        else if (currentGame != "") {
-            return Games.find({id: currentGame});
-        }
-        else {
-            return Games.find();
-        }
+    Meteor.publish('games', function() {
+        return Games.find();
     });
 
-    Meteor.publish('fields', function(currentTournament) {
-        return Fields.find({tournament_id: currentTournament});
+    Meteor.publish('fields', function() {
+        return Fields.find();
     });
 
     // Methodes-----------------------------------------------------------------

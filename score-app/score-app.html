@@ -14,7 +14,6 @@
 <template name="main">
     <div id="slideout-menu">
         <strong>Menu</strong>
-        <br />
         {{> menuItems}}
     </div>
     <div id="content">
@@ -28,10 +27,10 @@
     </div>
 </template>
 
-<!-- menu items in sidebar -->
+<!-- Menu items -->
 <template name="menuItems">
     <ul id="nav">
-        <li><a href="/">Home</a></li>
+        <li><a href="{{pathFor route='home'}}">Home</a></li>
         {{#if Template.subscriptionsReady}}
             {{#each tournament}}
                 {{> menuTournament}}
@@ -48,11 +47,11 @@
     </ul>
 </template>
 
-<!-- menu tournament items -->
+<!-- Menu tournament items -->
 <template name="menuTournament">
     <li>
-<!--         <a href="{{pathFor route='tournament'}}" class="menuItem" skipir>{{name}}</a>  -->
-        <div class="tournament">{{name}}</div>
+        <!-- Clickable div -->
+        <label class="tournament">{{name}}</label>
         <ul class="sub-nav">
             {{#each field}}
                 {{> menuField}}
@@ -61,12 +60,16 @@
     </li>
 </template>
 
+<!-- Menu field items -->
 <template name="menuField">
     <li>
-        <div class="field">{{name}}</div>
+        <!-- Clickable div -->
+        <label class="field">{{name}}</label>
         <ul class="sub-nav2">
             {{#each game}}
-                <li><a href="{{pathFor route='game'}}">                    {{team_1_name}} vs {{team_2_name}}</a></li>
+                <li>
+                    <a href="{{pathFor route='game'}}">                    {{team_1_name}} vs {{team_2_name}}</a>
+                </li>
             {{/each}}
         </ul>
     </li>

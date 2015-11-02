@@ -64,11 +64,12 @@ Router.route('/game/:id', {
         else {
             Router.go('login');
         }
-    },
-    waitOn: function() {
-        var currentGame = parseInt(this.params["id"]);
-        return Meteor.subscribe('games', "", currentGame)
     }
+    // },
+    // waitOn: function() {
+    //     var currentGame = parseInt(this.params["id"]);
+    //     return Meteor.subscribe('games', "", currentGame)
+    // }
 });
 
 // Auto-close the sidebar on route stop (when navigating to a new route)
@@ -87,6 +88,31 @@ if (Meteor.isClient) {
         }
     });
 
+    // Find all fields from the given tournament
+    Template.menuTournament.helpers( {
+        'field': function() {
+            return Fields.find({tournament_id: this.id}, {sort: {name: 1}});
+        }
+    });
+
+    // TODO sorteren op tournament naam en geef een kleur
+    // Find all games from the given field
+    Template.menuField.helpers( {
+        'game': function() {
+            return Games.find({game_site_id: this.id});
+        }
+    });
+
+    // Event functions----------------------------------------------------------
+    // Sidebar toggle
+    var slideout;
+    Template.main.events({
+        'click #toggle': function (e) {
+            slideout.toggle();
+        }
+    });
+
+    // When a user logs out
     Template.menuItems.events( {
         'click .logout': function(event) {
             event.preventDefault();
@@ -95,14 +121,7 @@ if (Meteor.isClient) {
         }
     });
 
-    // -------------------------------------------------------------------------
-    // Find all fields related to tournaments
-    Template.menuTournament.helpers( {
-        'field': function() {
-            return Fields.find({tournament_id: this.id});
-        }
-    });
-
+    // When the user clicks on a menu entry, show/hide
     Template.menuTournament.events( {
         'click .tournament': function() {
             $(event.target).siblings().slideToggle();
@@ -112,21 +131,7 @@ if (Meteor.isClient) {
         }
     });
 
-    Template.menuField.helpers( {
-        'game': function() {
-            return Games.find({game_site_id: this.id});
-        }
-    });
-
-    // Sidebar------------------------------------------------------------------
-    var slideout;
-    // Sidebar toggle
-    Template.main.events({
-        'click #toggle': function (e) {
-            slideout.toggle();
-        }
-    });
-
+    // onRendered functions-----------------------------------------------------
     // Sidebar instance initialisation
     Template.main.onRendered(function () {
         var template = this;
@@ -257,12 +262,7 @@ if (Meteor.isServer) {
     });
 
     Meteor.publish('fields', function(currentTournament) {
-        if (currentTournament == "") {
-            return Fields.find();
-        }
-        else {
-            return Fields.find({tournament_id: currentTournament});
-        }
+        return Fields.find({tournament_id: currentTournament});
     });
 
     // Methodes-----------------------------------------------------------------

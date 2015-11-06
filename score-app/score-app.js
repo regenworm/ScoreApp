@@ -154,22 +154,71 @@ if (Meteor.isClient) {
         },
         'click #team_1_plus': function () {
             var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {$inc: {team_1_score: 1}}, {$push: {history: Meteor.user()}});
+            Games.update({_id: currentGame['_id']}, {
+                $inc: {
+                    team_1_score: 1
+                }
+            }); 
+            Games.update(
+                {_id: currentGame['_id']}, {
+                $push: {
+                    history: {
+                        user: Meteor.userId(), 
+                        type:'team1+'
+                    }
+                }
+            });
         },
         'click #team_2_plus': function () {
             var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {$inc: {team_2_score: 1}}, {$push: {history: Meteor.user()}});
-
+            Games.update({_id: currentGame['_id']}, {
+                $inc: {
+                    team_2_score: 1
+                }
+            }); 
+            Games.update(
+                {_id: currentGame['_id']}, {
+                $push: {
+                    history: {
+                        user: Meteor.userId(), 
+                        type:'team2+'
+                    }
+                }
+            });
         },
         'click #team_1_minus': function () {
             var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {$inc: {team_1_score: -1}}, {$push: {history: Meteor.user()}});
-
+            Games.update({_id: currentGame['_id']}, {
+                $inc: {
+                    team_1_score: -1
+                }
+            }); 
+            Games.update(
+                {_id: currentGame['_id']}, {
+                $push: {
+                    history: {
+                        user: Meteor.userId(), 
+                        type:'team1-'
+                    }
+                }
+            });
         },
         'click #team_2_minus': function () {
             var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {$inc: {team_2_score: -1}}, {$push: {history: Meteor.user()}});
-
+            Games.update({_id: currentGame['_id']}, {
+                $inc: {
+                    team_2_score: -1
+                }
+            }); 
+            Games.update(
+                {_id: currentGame['_id']}, {
+                $push: {
+                    history: {
+                        user: Meteor.userId(), 
+                        type:'team2-'
+                    }
+                }
+            });
         },
     });
 
@@ -279,7 +328,7 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
     // easy db reset
-    if (false) {
+    if (true) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -361,7 +410,7 @@ if (Meteor.isServer) {
                             game_site_id: null,
                             tournament_id: null,
                             start_time: null,
-                            history: [],
+                            history: []
                         }
                         values = ["id","team_1_id","team_1_score","team_2_id","team_2_name","team_2_score","game_site_id","tournament_id","start_time"];
                         // if important values are uninitialised, set to onbekend
@@ -428,7 +477,7 @@ if (Meteor.isServer) {
 
     // Insert data which has not been inserted yet------------------------------
     var tids = [20019, 19750, 19747];
-    if (false) {
+    if (true) {
         tids.forEach(function (tid) {
             // Insert tournaments which are not in the db yet
             Meteor.call('updateTournament', tid);

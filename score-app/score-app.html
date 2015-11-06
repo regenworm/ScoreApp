@@ -1,181 +1,199 @@
 <head>
-  <title>Score-App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>score-app</title>
+    <meta http-equiv="cleartype" content="on">
+    <meta name="MobileOptimized" content="320">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 </head>
- 
+
 <body>
 </body>
 
-<!-- home -->
-<template name="home">
-    {{#if currentUser}}
-        {{> tournament_view}}
-    {{else}}
-        {{> login}}
-    {{/if}}
-</template>
-
-<!-- Log in -->
-<template name="login">
-    <div id="login" class="container">
-        <div class="row">
-            <div id="loginbox" class="col-xs-8 col-xs-offset-2">
-                <h1> Login </h1>
-                <form class="login" role="form">
-                    <div class="form-group">
-                        <input class="form-control" type="text" name="username" placeholder="Username">
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control" type="password" name="password" placeholder="Password">
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control" type="submit" value="Login">
-                    </div>
-                </form>
-                <button class="form-control btn-info">Register</button>
-            </div>
-        </div>
+<!-- What is displayed on all pages -->
+<template name="main">
+    <div id="slideout-menu">
+        <strong>Menu</strong>
+        {{> menuItems}}
     </div>
-</template>
-
-<!-- Register -->
-<template name="register">
-    <div id="login" class="container">
-        <div class="row">
-            <div id="loginbox" class="col-xs-8 col-xs-offset-2">
-                <h1> Register </h1>
-                <form class="register" role="form">
-                    <div class="form-group">
-                        <input class="form-control" type="text" name="usernamer" placeholder="Username">
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control" type="password" name="passwordr" placeholder="Password">
-                    </div>
-                    <div class="form-group">
-                        <input class="form-control btn-info" type="submit" value="Register">
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</template>
-
-<!-- Sidebar -->
-<template name="sidebar">
-    <div id="sidebar">
-            <ul class="horizontalview">
-                <li><a href="/field1">Field 1</a></li>
-                <li><a href="/field2">Field 2</a></li>
-                <li><a href="/field3">Field 3</a></li>
-                <li><a href="#" class="logout">Log Out</a></li>
-            </ul>
-        </div>
-</template>
-
-<template name="menu">
-    <div id="stickytoggle">
-        <button data-toggle=".container" id="sidebar-toggle" class="side-bar">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
+    <div id="content">
+        <button id="toggle">
+            <i class="fa fa-bars"></i>
         </button>
-
-        <button id="backbutton" class="side-bar">
-            <span class="glyphicon glyphicon-triangle-left"></span>
-        </button>
+        <h1>Score App</h1>
+        {{> yield}}
+        <hr />
+        <p>Copyright &copy; Tournaments, 2015-2016.</p>
     </div>
 </template>
 
-
-
-
-<!-- Field view -->
-<template name="field_view">
-    <div id='wrapper' class="container">
-        <div id="sidebar">
-            <ul class="horizontalview">
-                <li><a href="/field1">Field 1</a></li>
-                <li><a href="/field2">Field 2</a></li>
-                <li><a href="/field3">Field 3</a></li>
-                <li>{{> loginButtons}} </li>
-            </ul>
-        </div>
-        <div class="info_view fieldview">
-            {{> menu}}
-            <div class="content">
-                <div id="fieldname" class="row">
-                    <h1> Field 1 </h1>
-                </div>
-                {{> team}}
-                {{> team}}
-            </div>
-        </div>
-    </div>
+<!-- Menu items -->
+<template name="menuItems">
+    <ul id="nav">
+        <li><a href="{{pathFor route='home'}}">Home</a></li>
+        {{#if Template.subscriptionsReady}}
+            {{#each tournament}}
+                {{> menuTournament}}
+            {{/each}}
+        {{else}}
+            {{> loading}}
+        {{/if}}
+        {{#if currentUser}}
+            <li><a href="#" class="logout">Logout</a></li>
+        {{else}}
+            <li><a href="{{pathFor route='register'}}">Register</a></li>
+            <li><a href="{{pathFor route='login'}}">Login</a></li>
+        {{/if}}
+    </ul>
 </template>
 
-<template name="team">
-    <div class="col-xs-6">
-        <ul>
-            <li> <h2> Team 1</h2></li>
-            <li> Rood </li>
-            <li> 1 </li>
-            <li><button> <span class="glyphicon glyphicon-plus"></span></button></li>
-            <li><button> <span class="glyphicon glyphicon-minus"></span></button></li>
+<!-- Menu tournament items -->
+<template name="menuTournament">
+    <li>
+        <!-- Clickable div -->
+        <label class="tournament">{{name}}</label>
+        <ul class="sub-nav">
+            {{#each field}}
+                {{> menuField}}
+            {{/each}}
         </ul>
-    </div>
+    </li>
 </template>
 
-<!-- Pick Tournament -->
-<template name="tournament_view">
-    <div id='wrapper' class="container open-sidebar">
-        <div id="sidebar">
-            <ul>
-                <li><a href="/tournament-1">Tournament 1</a></li>
-                <li><a href="/tournament-2">Tournament 2</a></li>
-                <li><a href="/tournament-3">Tournament 3</a></li>
-                <li>{{> loginButtons}} </li>
-            </ul>
-        </div>
-        <div class="info_view">
-            {{> menu}}
-            <div class="content">
-                <h1> Leuke shit </h1>
-                <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
-                <h1> Meer leuke shit </h1>
-                <p>
-                    Hoera, scrollen! lorem
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
-                <h1> Jongens meer content </h1>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                    consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                    cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                </p>
-            </div>
+<!-- Menu field items -->
+<template name="menuField">
+    <li>
+        <!-- Clickable div -->
+        <label class="field">{{name}}</label>
+        <ul class="sub-nav2">
+            {{#each game}}
+                <li>
+                    <a href="{{pathFor route='game'}}">                    {{team_1_name}} vs {{team_2_name}}</a>
+                </li>
+            {{/each}}
+        </ul>
+    </li>
+</template>
+
+<!-- Home page -->
+<template name="homePage">
+    <p>HomePage</p>
+</template>
+
+<!-- What happens on a game view -->
+<template name="gameView">
+    <div class="row">
+        <div class="col-xs-12 centerDiv">
+            <h2>{{start}}</h2>            
         </div>
     </div>
+    <div class="row">
+        <div class="col-xs-5 centerDiv">
+            <h2>{{team_1_name}}</h2>
+        </div>
+        <div class="col-xs-2 centerDiv">
+            <h2>VS</h2>
+        </div>
+        <div class="col-xs-5 centerDiv">
+            <h2>{{team_2_name}}</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-5 centerDiv">
+            <button id="team_1_minus" class="btn btn-default">
+                <i class="fa fa-minus fa-2x"></i>
+            </button>
+        </div>
+        <div class="col-xs-2"></div>
+        <div class="col-xs-5 centerDiv" >
+            <button id="team_2_minus" class="btn btn-default">
+                <i class="fa fa-minus fa-2x"></i>
+            </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-5 centerDiv" >
+            <h1>{{team_1_score}}</h1>
+        </div>
+        <div class="col-xs-2 centerDiv" >
+            <h1>:</h1>
+        </div>
+        <div class="col-xs-5 centerDiv">
+            <h1>{{team_2_score}}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-5 centerDiv" >
+            <button id="team_1_plus" class="btn btn-default">
+                <i class="fa fa-plus fa-2x"></i>
+            </button>
+        </div>
+        <div class="col-xs-2"></div>
+        <div class="col-xs-5 centerDiv" >
+            <button id="team_2_plus" class="btn btn-default">
+                <i class="fa fa-plus fa-2x"></i>
+            </button>
+        </div>
+    </div>
+    <div class="row" id="viscue">
+        <div class="col-xs-5 centerDiv">
+            <select name="colorpicker1">
+                <option value="#7bd148">Green</option>
+                <option value="#5484ed">Bold blue</option>
+                <option value="#a4bdfc">Blue</option>
+                <option value="#46d6db">Turquoise</option>
+                <option value="#7ae7bf">Light green</option>
+                <option value="#51b749">Bold green</option>
+                <option value="#fbd75b">Yellow</option>
+                <option value="#ffb878">Orange</option>
+                <option value="#ff887c">Red</option>
+                <option value="#dc2127">Bold red</option>
+                <option value="#dbadff">Purple</option>
+                <option value="#e1e1e1">Gray</option>
+            </select>
+        </div>
+        <div class="col-xs-2"></div>
+        <div class="col-xs-5 centerDiv">
+            <select name="colorpicker2">
+                <option value="#7bd148">Green</option>
+                <option value="#5484ed">Bold blue</option>
+                <option value="#a4bdfc">Blue</option>
+                <option value="#46d6db">Turquoise</option>
+                <option value="#7ae7bf">Light green</option>
+                <option value="#51b749">Bold green</option>
+                <option value="#fbd75b">Yellow</option>
+                <option value="#ffb878">Orange</option>
+                <option value="#ff887c">Red</option>
+                <option value="#dc2127">Bold red</option>
+                <option value="#dbadff">Purple</option>
+                <option value="#e1e1e1">Gray</option>
+            </select>
+        </div>
+    </div>
+    <button id="gps"><i class="fa fa-location-arrow"></i></button>
+</template>
+
+<!-- Register page -->
+<template name="registerPage">
+    <h2>Register</h2>
+    <form class="register">
+        <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
+        <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
+        <p><input type="submit" value="Register"></p>
+    </form>
+</template>
+
+<!-- Login page -->
+<template name="loginPage">
+    <h2>Login</h2>
+    <form class="login">
+        <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
+        <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
+        <p><input type="submit" value="Login"></p>
+    </form>
+</template>
+
+<!-- Loading -->
+<template name="loading">
+    <i class="fa fa-spinner fa-spin fa-4x"></i>
 </template>

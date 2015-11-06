@@ -31,6 +31,9 @@
 <template name="menuItems">
     <ul id="nav">
         <li><a href="{{pathFor route='home'}}">Home</a></li>
+        {{#if currentUser}}
+            <li><a href="{{pathFor route='field_overview'}}">Field overview</a></li>
+        {{/if}}
         {{#if Template.subscriptionsReady}}
             {{#each tournament}}
                 {{> menuTournament}}
@@ -68,7 +71,7 @@
         <ul class="sub-nav2">
             {{#each game}}
                 <li>
-                    <a href="{{pathFor route='game'}}">                    {{team_1_name}} vs {{team_2_name}}</a>
+                    <a href="{{pathFor route='game'}}">{{team_1_name}} vs {{team_2_name}}</a>
                 </li>
             {{/each}}
         </ul>
@@ -78,6 +81,10 @@
 <!-- Home page -->
 <template name="homePage">
     <p>HomePage</p>
+</template>
+
+<!-- What happens on a field view -->
+<template name="fieldView">
 </template>
 
 <!-- What happens on a game view -->

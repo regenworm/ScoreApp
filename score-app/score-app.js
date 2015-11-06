@@ -25,6 +25,19 @@ Router.route('/', {
                 Meteor.subscribe('games')];
     }
 });
+Router.route('/field_overview', {
+	name: 'field_overview',
+	template: 'fieldView',
+	onBeforeAction: function() {
+		var currentUser = Meteor.userId();
+		if (currentUser) {
+			this.next();
+		}
+		else {
+			Router.go('login');
+		}
+	}
+});
 Router.route('/register', {
     template: 'registerPage',
     onBeforeAction: function() {

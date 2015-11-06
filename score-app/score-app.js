@@ -80,16 +80,6 @@ Router.onStop(function () {
 });
 
 if (Meteor.isClient) {
-    Template.gameView.events({
-        'click #gps': function() {
-            console.log("message");
-            Location.locate(function(pos){
-               console.log("Got a position!", pos);
-            }, function(err){
-               console.log("Oops! There was an error", err);
-            });
-        }
-    });
 
 
     // Helper functions---------------------------------------------------------
@@ -141,6 +131,46 @@ if (Meteor.isClient) {
         'click .field': function() {
             $(event.target).siblings().slideToggle();
         }
+    });
+
+    Template.gameView.events({
+        'click #gps': function() {
+            console.log("message");
+            Location.locate(function(pos){
+               console.log("Got a position!", pos);
+            }, function(err){
+               console.log("Oops! There was an error", err);
+            });
+        },
+        'click #setGps': function() {
+            var currentGame = this;
+            Location.locate(function(pos){
+               console.log("Got a position!", pos);
+               console.log(currentGame.game_site_id);
+               Fields.update({_id: Fields.findOne({id: currentGame.game_site_id})['_id']}, {$set: {position: pos}});
+            }, function(err){
+               console.log("Oops! There was an error", err);
+            });
+        },
+        'click #team_1_plus': function () {
+            var currentGame = this;
+            Games.update({_id: currentGame['_id']}, {$inc: {team_1_score: 1}}, {$push: {history: Meteor.user()}});
+        },
+        'click #team_2_plus': function () {
+            var currentGame = this;
+            Games.update({_id: currentGame['_id']}, {$inc: {team_2_score: 1}}, {$push: {history: Meteor.user()}});
+
+        },
+        'click #team_1_minus': function () {
+            var currentGame = this;
+            Games.update({_id: currentGame['_id']}, {$inc: {team_1_score: -1}}, {$push: {history: Meteor.user()}});
+
+        },
+        'click #team_2_minus': function () {
+            var currentGame = this;
+            Games.update({_id: currentGame['_id']}, {$inc: {team_2_score: -1}}, {$push: {history: Meteor.user()}});
+
+        },
     });
 
     // onRendered functions-----------------------------------------------------
@@ -249,7 +279,7 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
     // easy db reset
-    if (true) {
+    if (false) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -313,9 +343,12 @@ if (Meteor.isServer) {
             this.unblock();
             var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
             while (true) {
-                results.data["objects"].forEach(function (match) {
+                results.data["objects"].some(function (match) {
+                    if (match["team_1_id"] === null || match["team_2_id"] === null || typeof(match["team_1_id"]) === undefined || typeof(match["team_2_id"]) === undefined) {
+                        return false;
+                    }
                     if (Games.find({id: match["id"]}).count() == 0) {
-                        var team1temp = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/?team_ids=%5B"+ match["team_1_id"]+ "%5D");
+                        // var team1temp = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/?team_ids=%5B"+ match["team_1_id"]+ "%5D");
                         // var team2 = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/"+ match["team_2_id"])["name"];
                         currentgame = {
                             id: null,
@@ -327,9 +360,10 @@ if (Meteor.isServer) {
                             team_2_score: null,
                             game_site_id: null,
                             tournament_id: null,
-                            start: null
+                            start_time: null,
+                            history: [],
                         }
-                        values = ["id","team_1_id","team_1_score","team_2_id","team_2_name","team_2_score","game_site_id","tournament_id","start"];
+                        values = ["id","team_1_id","team_1_score","team_2_id","team_2_name","team_2_score","game_site_id","tournament_id","start_time"];
                         // if important values are uninitialised, set to onbekend
                         for (i=0; i < values.length; i++){
                             var value = match[values[i]];
@@ -393,15 +427,17 @@ if (Meteor.isServer) {
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [20019];//19750, 19747, 20019];
-    tids.forEach(function (tid) {
-        // Insert tournaments which are not in the db yet
-        Meteor.call('updateTournament', tid);
+    var tids = [20019, 19750, 19747];
+    if (false) {
+        tids.forEach(function (tid) {
+            // Insert tournaments which are not in the db yet
+            Meteor.call('updateTournament', tid);
 
-        // Insert games rounds
-        Meteor.call("updateGames", tid);
+            // Insert games rounds
+            Meteor.call("updateGames", tid);
 
-        // Insert fields
-        Meteor.call('updateFields', tid);
-    });
+            // Insert fields
+            Meteor.call('updateFields', tid);
+        });
+    }
 }

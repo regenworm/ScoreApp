@@ -153,6 +153,7 @@ if (Meteor.isClient) {
     });
 
     Template.gameView.events({
+        // get gps location
         'click #gps': function() {
             console.log("message");
             Location.locate(function(pos){
@@ -161,6 +162,7 @@ if (Meteor.isClient) {
                console.log("Oops! There was an error", err);
             });
         },
+        // set field gps to current location
         'click #setGps': function() {
             var currentGame = this;
             Location.locate(function(pos){
@@ -347,7 +349,7 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
     // easy db reset
-    if (false) {
+    if (true) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -416,47 +418,19 @@ if (Meteor.isServer) {
                         return false;
                     }
                     if (Games.find({id: match["id"]}).count() == 0) {
-                        // var team1temp = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/?team_ids=%5B"+ match["team_1_id"]+ "%5D");
-                        // var team2 = Meteor.http.call("GET", "https://api.leaguevine.com/v1/teams/"+ match["team_2_id"])["name"];
                         currentgame = {
-                            id: null,
-                            team_1_id: null,
-                            team_1_name: null,
-                            team_1_score: null,
-                            team_2_id: null,
-                            team_2_name: null,
-                            team_2_score: null,
-                            game_site_id: null,
-                            tournament_id: null,
-                            start_time: null,
+                            id: match["id"],
+                            team_1_id: match["team_1_id"],
+                            team_1_name: match["team_1"]["name"],
+                            team_1_score: match["team_1_score"],
+                            team_2_id: match["team_2_id"],
+                            team_2_name: match["team_2"]["name"],
+                            team_2_score: match["team_2_score"],
+                            game_site_id: match["game_site_id"],
+                            tournament_id: match["tournament_id"],
+                            start_time: match["start_time"],
                             history: []
-                        }
-                        values = ["id","team_1_id","team_1_score","team_2_id","team_2_name","team_2_score","game_site_id","tournament_id","start_time"];
-                        // if important values are uninitialised, set to onbekend
-                        for (i=0; i < values.length; i++){
-                            var value = match[values[i]];
-                            if ((value !== null) && (typeof(value) !== "undefined")) {
-                                currentgame[values[i]] = value;
-                            }
-                            else {
-                                currentgame[values[i]] = "Onbekend";
-                            }
-                        }
-                        var team_1_name = match["team_1"]["name"];
-                        if ((team_1_name !== null) && (typeof(team_1_name) !== "undefined")) {
-                            currentgame["team_1_name"] = team_1_name;
-                        }
-                        else {
-                            currentgame["team_1_name"] = "Onbekend";
-                        }
-                        var team_2_name = match["team_2"]["name"];
-                        if ((team_2_name !== null) && (typeof(team_2_name) !== "undefined")) {
-                            currentgame["team_2_name"] = team_2_name;
-                        }
-                        else {
-                            currentgame["team_2_name"] = "Onbekend";
-                        }
-
+                        };
                         Games.insert(currentgame);
                     }
                 });

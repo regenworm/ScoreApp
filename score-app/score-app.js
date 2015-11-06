@@ -118,6 +118,12 @@ if (Meteor.isClient) {
         }
     });
 
+    Template.gameView.helpers({
+        'parsed_time': function() {
+            return moment(this['start_time']).format('Do MMMM, h:mm a');
+        }
+    });
+
     // Event functions----------------------------------------------------------
     // Sidebar toggle
     var slideout;
@@ -341,7 +347,7 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
     // easy db reset
-    if (true) {
+    if (false) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});

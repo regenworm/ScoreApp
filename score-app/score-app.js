@@ -241,6 +241,16 @@ if (Meteor.isClient) {
                 }
             });
         },
+
+        // update teamcolors
+        'click #colorpicker1': function () {
+            color = $('#colorpicker1').val();
+            $('.team_1_col').css('background',color);
+        },
+        'click #colorpicker2': function () {
+            color = $('#colorpicker2').val();
+            $('.team_2_col').css('background',color);
+        }
     });
 
     // onRendered functions-----------------------------------------------------
@@ -253,6 +263,14 @@ if (Meteor.isClient) {
             'padding': 600,
             'tolerance': 70
         });
+    });
+
+    // Team colors
+    Template.gameView.onRendered(function() {
+        color = $('#colorpicker1').val();
+        $('.team_1_col').css('background',color);
+        color = $('#colorpicker2').val();
+        $('.team_2_col').css('background',color);
     });
 
     // Login, register and logout-----------------------------------------------

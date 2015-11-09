@@ -486,7 +486,8 @@ if (Meteor.isServer) {
                             id: event_site["id"],
                             name: event_site["name"],
                             location: event_site["event_site"]["description"],
-                            tournament_id: related_tournaments
+                            tournament_id: related_tournaments,
+                            games: related_games
                         });
                     }
                 });

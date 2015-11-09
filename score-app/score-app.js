@@ -106,7 +106,6 @@ if (Meteor.isClient) {
         }
     });
 
-    // TODO sorteren op tournament naam en geef een kleur
     // Find all games from the given field
     Template.menuField.helpers( {
         'game': function() {
@@ -114,13 +113,34 @@ if (Meteor.isClient) {
         }
     });
 
+    // Find the parsed time of a game
     Template.gameView.helpers({
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
         }
     });
 
+    // Find all the fields
+    Template.fieldView.helpers({
+        Fields: function() {
+            return Fields;
+        },
+        Games: function() {
+            return Games;
+        },
+        Tournaments: function() {
+            return Tournaments;
+        }
+    });
+
     // Event functions----------------------------------------------------------
+    Template.fieldView.events({
+        'click .reactive-table tbody tr': function(event) {
+            var field = this;
+            console.log(field);
+        }
+    });
+
     // Sidebar toggle
     var slideout;
     Template.main.events({

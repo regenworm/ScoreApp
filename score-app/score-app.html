@@ -85,6 +85,9 @@
 
 <!-- What happens on a field view -->
 <template name="fieldView">
+    {{> reactiveTable collection=Fields}}
+    {{> reactiveTable collection=Games}}
+    {{> reactiveTable collection=Tournaments}}
 </template>
 
 <!-- What happens on a game view -->

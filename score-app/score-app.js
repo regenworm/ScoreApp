@@ -478,6 +478,10 @@ if (Meteor.isServer) {
                         Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
                             related_tournaments.push(game["tournament_id"]);
                         });
+                        var related_games = [];
+                        Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
+                            related_games.push(game["id"], {sort: {start_time: 1}});
+                        });
                         Fields.insert({
                             id: event_site["id"],
                             name: event_site["name"],

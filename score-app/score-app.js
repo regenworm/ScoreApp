@@ -182,11 +182,11 @@ if (Meteor.isClient) {
         'click #setGps': function() {
             var currentGame = this;
             Location.locate(function(pos){
-               console.log("Got a position!", pos);
-               console.log(currentGame.game_site_id);
-               Fields.update({_id: Fields.findOne({id: currentGame.game_site_id})['_id']}, {$set: {position: pos}});
+                var currentField = Fields.findOne({id: currentGame["game_site_id"]});
+                // console.log("Field", currentField);
+                Fields.update({_id: currentField["_id"]}, {$set: {location: pos}});
             }, function(err){
-               console.log("Oops! There was an error", err);
+                console.log("Oops! There was an error", err);
             });
         },
         'click #team_1_plus': function () {
@@ -262,10 +262,44 @@ if (Meteor.isClient) {
         'click #colorpicker1': function () {
             color = $('#colorpicker1').val();
             $('.team_1_col').css('background',color);
+            console.log(this);
+            Games.find({team_1_id: this["team_1_id"]}).forEach(function (post) {
+                Games.update({_id: post._id}, {
+                    $set: {
+                        team_1_col: color
+                    }
+                })            
+            });
+            Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
+                Games.update({_id: post._id}, {
+                    $set: {
+                        team_2_col: color
+                    }
+                })            
+            });
+            // Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
+            //     Games.update({_id: post._id}, {team_2_col: color});            
+            // });
+
         },
         'click #colorpicker2': function () {
             color = $('#colorpicker2').val();
             $('.team_2_col').css('background',color);
+            Games.find({team_1_id: this["team_2_id"]}).forEach(function (post) {
+                Games.update({_id: post._id}, {
+                    $set: {
+                        team_1_col: color
+                    }
+                })            
+            });
+            
+            Games.find({team_2_id: this["team_2_id"]}).forEach(function (post) {
+                Games.update({_id: post._id}, {
+                    $set: {
+                        team_2_col: color
+                    }
+                })            
+            });
         }
     });
 
@@ -281,13 +315,13 @@ if (Meteor.isClient) {
         });
     });
 
-    // Team colors
-    Template.gameView.onRendered(function() {
-        color = $('#colorpicker1').val();
-        $('.team_1_col').css('background',color);
-        color = $('#colorpicker2').val();
-        $('.team_2_col').css('background',color);
-    });
+    // // Team colors
+    // Template.gameView.onRendered(function() {
+    //     color = $('#colorpicker1').val();
+    //     $('.team_1_col').css('background',color);
+    //     color = $('#colorpicker2').val();
+    //     $('.team_2_col').css('background',color);
+    // });
 
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
@@ -449,9 +483,11 @@ if (Meteor.isServer) {
                             team_1_id: match["team_1_id"],
                             team_1_name: match["team_1"]["name"],
                             team_1_score: match["team_1_score"],
+                            team_1_col: "#fff",
                             team_2_id: match["team_2_id"],
                             team_2_name: match["team_2"]["name"],
                             team_2_score: match["team_2_score"],
+                            team_2_col: "#fff",
                             game_site_id: match["game_site_id"],
                             tournament_id: match["tournament_id"],
                             start_time: match["start_time"],
@@ -480,7 +516,7 @@ if (Meteor.isServer) {
                         });
                         var related_games = [];
                         Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
-                            related_games.push(game["id"], {sort: {start_time: 1}});
+                            related_games.push(game["id"]);
                         });
                         Fields.insert({
                             id: event_site["id"],
@@ -500,7 +536,7 @@ if (Meteor.isServer) {
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [20019, 19750, 19747];
+    var tids = [20019];//, 19750, 19747];
     if (true) {
         tids.forEach(function (tid) {
             // Insert tournaments which are not in the db yet

@@ -117,6 +117,14 @@ if (Meteor.isClient) {
     Template.gameView.helpers({
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
+        },
+        'select_color': function(col1, col2) {
+            if (col1) {
+                $('#colorpicker1').val(col1);
+            }
+            if (col2) {
+                $('#colorpicker2').val(col2);
+            }
         }
     });
 
@@ -183,7 +191,6 @@ if (Meteor.isClient) {
             var currentGame = this;
             Location.locate(function(pos){
                 var currentField = Fields.findOne({id: currentGame["game_site_id"]});
-                // console.log("Field", currentField);
                 Fields.update({_id: currentField["_id"]}, {$set: {location: pos}});
             }, function(err){
                 console.log("Oops! There was an error", err);
@@ -260,22 +267,25 @@ if (Meteor.isClient) {
 
         // update teamcolors
         'click #colorpicker1': function () {
+            currentGame = this;
             color = $('#colorpicker1').val();
-            $('.team_1_col').css('background',color);
-            console.log(this);
             Games.find({team_1_id: this["team_1_id"]}).forEach(function (post) {
-                Games.update({_id: post._id}, {
-                    $set: {
-                        team_1_col: color
-                    }
-                })            
+                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_1_col: color
+                        }
+                    })
+                }            
             });
             Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
-                Games.update({_id: post._id}, {
-                    $set: {
-                        team_2_col: color
-                    }
-                })            
+                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_2_col: color
+                        }
+                    })
+                }           
             });
             // Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
             //     Games.update({_id: post._id}, {team_2_col: color});            
@@ -283,22 +293,26 @@ if (Meteor.isClient) {
 
         },
         'click #colorpicker2': function () {
+            currentGame = this;
             color = $('#colorpicker2').val();
-            $('.team_2_col').css('background',color);
             Games.find({team_1_id: this["team_2_id"]}).forEach(function (post) {
-                Games.update({_id: post._id}, {
-                    $set: {
-                        team_1_col: color
-                    }
-                })            
+                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_1_col: color
+                        }
+                    })
+                }             
             });
             
             Games.find({team_2_id: this["team_2_id"]}).forEach(function (post) {
-                Games.update({_id: post._id}, {
-                    $set: {
-                        team_2_col: color
-                    }
-                })            
+                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_2_col: color
+                        }
+                    })
+                }             
             });
         }
     });
@@ -315,13 +329,6 @@ if (Meteor.isClient) {
         });
     });
 
-    // // Team colors
-    // Template.gameView.onRendered(function() {
-    //     color = $('#colorpicker1').val();
-    //     $('.team_1_col').css('background',color);
-    //     color = $('#colorpicker2').val();
-    //     $('.team_2_col').css('background',color);
-    // });
 
     // Login, register and logout-----------------------------------------------
     // Default messages for errors for login and register
@@ -417,7 +424,7 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
     // easy db reset
-    if (true) {
+    if (false) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -536,8 +543,8 @@ if (Meteor.isServer) {
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [20019];//, 19750, 19747];
-    if (true) {
+    var tids = [20019, 19750, 19747];
+    if (false) {
         tids.forEach(function (tid) {
             // Insert tournaments which are not in the db yet
             Meteor.call('updateTournament', tid);

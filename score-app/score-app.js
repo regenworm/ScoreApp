@@ -27,17 +27,22 @@ Router.route('/', {
     }
 });
 Router.route('/field_overview', {
-	name: 'field_overview',
-	template: 'fieldView',
-	onBeforeAction: function() {
-		var currentUser = Meteor.userId();
-		if (currentUser) {
-			this.next();
-		}
-		else {
-			Router.go('login');
-		}
-	}
+    name: 'field_overview',
+    template: 'fieldView',
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            this.next();
+        }
+        else {
+            Router.go('login');
+        }
+    }
+});
+// Later verwijderen
+Router.route('/database', {
+    name: 'database',
+    template: 'database'
 });
 Router.route('/register', {
     template: 'registerPage',
@@ -130,6 +135,22 @@ if (Meteor.isClient) {
 
     // Find all the fields
     Template.fieldView.helpers({
+        settings: function() {
+            return {
+                collection: Fields,
+                showNavigation: 'always',
+                fields: [
+                    {key: 'name', label: 'Name'}, 
+                    {key: 'location', label: 'Location'
+                    // ,fn: function (value, object) {return value}
+                    // voor de locatie berekening
+                    }]
+            };
+        }
+    });
+
+    // Later verwijderen
+    Template.database.helpers({
         Fields: function() {
             return Fields;
         },

@@ -47,6 +47,7 @@
             <li><a href="{{pathFor route='register'}}">Register</a></li>
             <li><a href="{{pathFor route='login'}}">Login</a></li>
         {{/if}}
+        <li><a href="{{pathFor route='database'}}">Database (debugging)</a></li>
     </ul>
 </template>
 
@@ -85,6 +86,11 @@
 
 <!-- What happens on a field view -->
 <template name="fieldView">
+    {{> reactiveTable settings=settings}}
+</template>
+
+<!-- Later verwijderen -->
+<template name="database">
     {{> reactiveTable collection=Fields}}
     {{> reactiveTable collection=Games}}
     {{> reactiveTable collection=Tournaments}}

@@ -84,10 +84,25 @@
     <p>HomePage</p>
 </template>
 
-<!-- What happens on a field view -->
+<!-- Show all the fields and sort them on the distance between the fields 
+location and yours -->
 <template name="fieldView">
     Click on a field to see a list of games.
     {{> reactiveTable settings=settings}}
+</template>
+
+<!-- Show all the games of a field in a list -->
+<template name="field_games">
+    <ul>
+        {{#each game}}
+            <li>
+                <span>
+                    {{parsed_time}}
+                    <a href="{{pathFor route='game'}}">{{team_1_name}} vs {{team_2_name}}</a>
+                </span>
+            </li>
+        {{/each}}
+    </ul>
 </template>
 
 <!-- Later verwijderen -->

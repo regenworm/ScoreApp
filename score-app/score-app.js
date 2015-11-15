@@ -18,17 +18,28 @@ Router.route('/', {
         else {
             Router.go('login');
         }
-    },
-    waitOn: function() {
-        // console.log("asd");
-        // return [Meteor.subscribe('tournaments'), 
-        //         Meteor.subscribe('fields'),
-        //         Meteor.subscribe('games')];
     }
 });
 Router.route('/field_overview', {
     name: 'field_overview',
     template: 'fieldView',
+    onBeforeAction: function() {
+        var currentUser = Meteor.userId();
+        if (currentUser) {
+            this.next();
+        }
+        else {
+            Router.go('login');
+        }
+    }
+});
+Router.route('/field/:id', {
+    name: 'field_games',
+    template: 'field_games',
+    data: function() {
+        var currentField = parseInt(this.params["id"]);
+        return Fields.findOne({id: currentField});
+    },
     onBeforeAction: function() {
         var currentUser = Meteor.userId();
         if (currentUser) {
@@ -118,6 +129,18 @@ if (Meteor.isClient) {
         }
     });
 
+    // Return the games of a field
+    Template.field_games.helpers( {
+        'game': function() {
+            console.log(typeof this.games);
+            console.log(this.games);
+            return Games.find({id: {$in: this.games}});
+        },
+        'parsed_time': function() {
+            return moment(this['start_time']).format('Do MMMM, h:mm a');
+        },
+    })
+
     // Find the parsed time of a game
     Template.gameView.helpers({
         'parsed_time': function() {
@@ -154,11 +177,15 @@ if (Meteor.isClient) {
                                     {latitude: cur_pos.latitude, longitude: cur_pos.longitude},
                                     {latitude: field_pos.latitude, longitude: field_pos.longitude}
                                 );
-                                if(distance < 1000) {
-                                    return distance + " m";
+                                distance = distance/1000
+                                if(distance < 10) {
+                                    return distance.toFixed(3) + " km";
+                                }
+                                else if(distance < 100) {
+                                    return distance.toFixed(2) + " km";
                                 }
                                 else {
-                                    return (distance/1000).toFixed(1) + " km";
+                                    return distance.toFixed(1) + " km";
                                 }
                             }
                             else {
@@ -201,11 +228,7 @@ if (Meteor.isClient) {
     Template.fieldView.events({
         'click .reactive-table tbody tr': function(event) {
             var field = this;
-            var games = field.games;
-            console.log(field);
-            games.forEach(function (game) {
-                console.log(game);
-            });
+            Router.go('field_games', this);
         }
     });
 

@@ -35,15 +35,13 @@
         <li><a href="{{pathFor route='home'}}">Home</a></li>
         {{#if currentUser}}
             <li><a href="{{pathFor route='field_overview'}}">Field overview</a></li>
-        {{/if}}
-        {{#if Template.subscriptionsReady}}
-            {{#each tournament}}
-                {{> menuTournament}}
-            {{/each}}
-        {{else}}
-            {{> loading}}
-        {{/if}}
-        {{#if currentUser}}
+            {{#if Template.subscriptionsReady}}
+                {{#each tournament}}
+                    {{> menuTournament}}
+                {{/each}}
+            {{else}}
+                {{> loading}}
+            {{/if}}
             <li><a href="#" class="logout">Logout</a></li>
         {{else}}
             <li><a href="{{pathFor route='register'}}">Register</a></li>

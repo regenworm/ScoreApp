@@ -20,6 +20,8 @@
         <button id="toggle">
             <i class="fa fa-bars"></i>
         </button>
+        <!-- get position -->
+        <button id="gps"><i class="fa fa-location-arrow"></i></button>
         <h1>Score App</h1>
         {{> yield}}
         <hr />
@@ -86,6 +88,7 @@
 
 <!-- What happens on a field view -->
 <template name="fieldView">
+    Click on a field to see a list of games.
     {{> reactiveTable settings=settings}}
 </template>
 
@@ -189,14 +192,20 @@
             </select>
         </div>
     </div>
-
-    <!-- get position -->
-    <button id="gps"><i class="fa fa-location-arrow"></i></button>
+    <br>
 
     <!-- update position field -->
-    <button id="setGps">
-        <i class="fa fa-map-marker"></i>
-    </button>
+    {{#if gpsSet}}
+        <button id="setGps">
+            <i class="fa fa-map-marker"></i>
+        </button>
+        Click here to set this fields location to yours!
+    {{else}}
+        <button id="setGps" disabled>
+            <i class="fa fa-map-marker"></i>
+        </button>
+        Set your gps location by clicking the gps button next to the menu button!
+    {{/if}}
 </template>
 
 <!-- Register page -->

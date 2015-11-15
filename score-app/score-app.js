@@ -20,10 +20,10 @@ Router.route('/', {
         }
     },
     waitOn: function() {
-        console.log("asd");
-        return [Meteor.subscribe('tournaments'), 
-                Meteor.subscribe('fields'),
-                Meteor.subscribe('games')];
+        // console.log("asd");
+        // return [Meteor.subscribe('tournaments'), 
+        //         Meteor.subscribe('fields'),
+        //         Meteor.subscribe('games')];
     }
 });
 Router.route('/field_overview', {
@@ -130,6 +130,9 @@ if (Meteor.isClient) {
             if (col2) {
                 $('#colorpicker2').val(col2);
             }
+        },
+        'gpsSet': function() {
+            return Session.get("cur_pos");
         }
     });
 
@@ -141,9 +144,30 @@ if (Meteor.isClient) {
                 showNavigation: 'always',
                 fields: [
                     {key: 'name', label: 'Name'}, 
-                    {key: 'location', label: 'Location'
-                    // ,fn: function (value, object) {return value}
-                    // voor de locatie berekening
+                    {
+                        key: 'location', label: 'Distance',
+                        // Calculate the distances
+                        fn: function(field_pos, field) {
+                            var cur_pos = Session.get("cur_pos");
+                            if(field_pos && cur_pos) {
+                                var distance = geolib.getDistance(
+                                    {latitude: cur_pos.latitude, longitude: cur_pos.longitude},
+                                    {latitude: field_pos.latitude, longitude: field_pos.longitude}
+                                );
+                                if(distance < 1000) {
+                                    return distance + " m";
+                                }
+                                else {
+                                    return (distance/1000).toFixed(1) + " km";
+                                }
+                            }
+                            else {
+                                if(!cur_pos) {
+                                    return "Set your location!";
+                                }
+                                return "Unknown";
+                            }
+                        }
                     }]
             };
         }
@@ -163,10 +187,25 @@ if (Meteor.isClient) {
     });
 
     // Event functions----------------------------------------------------------
+    Template.main.events({
+        // set gps location
+        'click #gps': function() {
+            Location.locate(function(pos){
+                Session.set("cur_pos", pos);
+            },  function(err){
+                console.log("Oops! There was an error", err);
+            });
+        },
+    });
+
     Template.fieldView.events({
         'click .reactive-table tbody tr': function(event) {
             var field = this;
+            var games = field.games;
             console.log(field);
+            games.forEach(function (game) {
+                console.log(game);
+            });
         }
     });
 
@@ -198,24 +237,12 @@ if (Meteor.isClient) {
     });
 
     Template.gameView.events({
-        // get gps location
-        'click #gps': function() {
-            console.log("message");
-            Location.locate(function(pos){
-               console.log("Got a position!", pos);
-            }, function(err){
-               console.log("Oops! There was an error", err);
-            });
-        },
         // set field gps to current location
         'click #setGps': function() {
             var currentGame = this;
-            Location.locate(function(pos){
-                var currentField = Fields.findOne({id: currentGame["game_site_id"]});
-                Fields.update({_id: currentField["_id"]}, {$set: {location: pos}});
-            }, function(err){
-                console.log("Oops! There was an error", err);
-            });
+            var pos = Session.get("cur_pos");
+            var currentField = Fields.findOne({id: currentGame["game_site_id"]});
+            Fields.update({_id: currentField["_id"]}, {$set: {location: pos}});
         },
         'click #team_1_plus': function () {
             var currentGame = this;
@@ -453,17 +480,17 @@ if (Meteor.isServer) {
 
 
     // Publishions--------------------------------------------------------------
-    Meteor.publish('tournaments', function() {
-        return Tournaments.find();
-    });
+    // Meteor.publish('tournaments', function() {
+    //     return Tournaments.find();
+    // });
 
-    Meteor.publish('games', function() {
-        return Games.find();
-    });
+    // Meteor.publish('games', function() {
+    //     return Games.find();
+    // });
 
-    Meteor.publish('fields', function() {
-        return Fields.find();
-    });
+    // Meteor.publish('fields', function() {
+    //     return Fields.find();
+    // });
 
     // Methodes-----------------------------------------------------------------
     Meteor.methods( {

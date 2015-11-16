@@ -404,6 +404,10 @@ if (Meteor.isClient) {
                     })
                 }             
             });
+        },
+        'click #isFinal': function () {
+            event.preventDefault();
+            $("div.overlay").fadeToggle("fast");
         }
     });
 

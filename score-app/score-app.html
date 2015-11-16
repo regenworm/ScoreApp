@@ -137,12 +137,18 @@ location and yours -->
             <button id="team_1_minus" class="btn btn-default">
                 <i class="fa fa-minus fa-2x"></i>
             </button>
+            <div class="overlay">
+                <i class="fa fa-ban x4"></i>
+            </div>
         </div>
         <div class="col-xs-2"></div>
         <div class="col-xs-5 centerDiv team_2_col" style="background-color: {{team_2_col}}">
             <button id="team_2_minus" class="btn btn-default">
                 <i class="fa fa-minus fa-2x"></i>
             </button>
+            <div class="overlay">
+                <i class="fa fa-ban x4"></i>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -161,12 +167,18 @@ location and yours -->
             <button id="team_1_plus" class="btn btn-default">
                 <i class="fa fa-plus fa-2x"></i>
             </button>
+            <div class="overlay">
+                <i class="fa fa-ban x4"></i>
+            </div>
         </div>
         <div class="col-xs-2"></div>
         <div class="col-xs-5 centerDiv team_2_col" style="background-color: {{team_2_col}}">
             <button id="team_2_plus" class="btn btn-default">
                 <i class="fa fa-plus fa-2x"></i>
             </button>
+            <div class="overlay">
+                <i class="fa fa-ban x4"></i>
+            </div>
         </div>
     </div>
     <div class="row" id="viscue">
@@ -220,6 +232,7 @@ location and yours -->
         </button>
         Set your gps location by clicking the gps button next to the menu button!
     {{/if}}
+<<<<<<< Updated upstream
     <span align="center">
         {{#with leftGame}}
             <a href="{{pathFor route='game'}}">&lt;</a>
@@ -229,6 +242,12 @@ location and yours -->
         {{/with}}
     </span>
         }
+=======
+    <button id="isFinal">
+        <i class="icon-minus-sign"></i>
+        Deactivate Game
+    </button>
+>>>>>>> Stashed changes
 </template>
 
 <!-- Register page -->

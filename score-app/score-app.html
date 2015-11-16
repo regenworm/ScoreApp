@@ -99,6 +99,7 @@ location and yours -->
                 <span>
                     {{parsed_time}}
                     <a href="{{pathFor route='game'}}">{{team_1_name}} vs {{team_2_name}}</a>
+                    ({{tournament_id}})
                 </span>
             </li>
         {{/each}}
@@ -219,6 +220,15 @@ location and yours -->
         </button>
         Set your gps location by clicking the gps button next to the menu button!
     {{/if}}
+    <span align="center">
+        {{#with leftGame}}
+            <a href="{{pathFor route='game'}}">&lt;</a>
+        {{/with}}
+        {{#with rightGame}}
+            <a href="{{pathFor route='game'}}">&gt;</a>
+        {{/with}}
+    </span>
+        }
 </template>
 
 <!-- Register page -->

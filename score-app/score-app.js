@@ -132,14 +132,18 @@ if (Meteor.isClient) {
     // Return the games of a field
     Template.field_games.helpers( {
         'game': function() {
-            console.log(typeof this.games);
-            console.log(this.games);
+            if(!this.games){
+                return;
+            }
             return Games.find({id: {$in: this.games}});
         },
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
         },
-    })
+        'tournament_id': function() {
+            return Tournaments.findOne({id: this["tournament_id"]})["name"];
+        }
+    });
 
     // Find the parsed time of a game
     Template.gameView.helpers({
@@ -156,6 +160,17 @@ if (Meteor.isClient) {
         },
         'gpsSet': function() {
             return Session.get("cur_pos");
+        },
+        'leftGame': function() {
+            var field = Fields.findOne({id: this.game_site_id});
+            if(!field) {
+                return;
+            }
+            var games = field["games"];
+            console.log(games);
+        },
+        'rightGame': function() {
+            console.log(this);
         }
     });
 
@@ -218,7 +233,7 @@ if (Meteor.isClient) {
         // set gps location
         'click #gps': function() {
             Location.locate(function(pos){
-                Session.set("cur_pos", pos);
+                Session.setAuth("cur_pos", pos);
             },  function(err){
                 console.log("Oops! There was an error", err);
             });

@@ -135,7 +135,8 @@ if (Meteor.isClient) {
             if(!this.games){
                 return;
             }
-            return Games.find({id: {$in: this.games}});
+            console.log(this.games);
+            return Games.find({id: {$in: this.games}}, {sort: {'start_time': 1}});
         },
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
@@ -225,6 +226,12 @@ if (Meteor.isClient) {
         },
         Tournaments: function() {
             return Tournaments;
+        }
+    });
+    Template.database.events({
+        'click .reactive-table tbody tr': function(event) {
+            var field = this;
+            console.log(this);
         }
     });
 
@@ -351,7 +358,8 @@ if (Meteor.isClient) {
             });
         },
 
-        // update teamcolors
+        // update teamcolors for all games that are after
+        // the current game
         'click #colorpicker1': function () {
             currentGame = this;
             color = $('#colorpicker1').val();
@@ -373,10 +381,6 @@ if (Meteor.isClient) {
                     })
                 }           
             });
-            // Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
-            //     Games.update({_id: post._id}, {team_2_col: color});            
-            // });
-
         },
         'click #colorpicker2': function () {
             currentGame = this;
@@ -583,7 +587,7 @@ if (Meteor.isServer) {
                             team_2_col: "#fff",
                             game_site_id: match["game_site_id"],
                             tournament_id: match["tournament_id"],
-                            start_time: match["start_time"],
+                            start_time: Date.parse(match["start_time"]),
                             history: []
                         };
                         Games.insert(currentgame);
@@ -607,10 +611,13 @@ if (Meteor.isServer) {
                         Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
                             related_tournaments.push(game["tournament_id"]);
                         });
+
+
                         var related_games = [];
                         Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
                             related_games.push(game["id"]);
                         });
+
                         Fields.insert({
                             id: event_site["id"],
                             name: event_site["name"],

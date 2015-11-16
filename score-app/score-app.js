@@ -212,6 +212,12 @@ if (Meteor.isClient) {
             return Tournaments;
         }
     });
+    Template.database.events({
+        'click .reactive-table tbody tr': function(event) {
+            var field = this;
+            console.log(this);
+        }
+    });
 
     // Event functions----------------------------------------------------------
     Template.main.events({
@@ -336,7 +342,8 @@ if (Meteor.isClient) {
             });
         },
 
-        // update teamcolors
+        // update teamcolors for all games that are after
+        // the current game
         'click #colorpicker1': function () {
             currentGame = this;
             color = $('#colorpicker1').val();
@@ -358,10 +365,6 @@ if (Meteor.isClient) {
                     })
                 }           
             });
-            // Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
-            //     Games.update({_id: post._id}, {team_2_col: color});            
-            // });
-
         },
         'click #colorpicker2': function () {
             currentGame = this;
@@ -495,7 +498,7 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
     // easy db reset
-    if (false) {
+    if (true) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -592,10 +595,17 @@ if (Meteor.isServer) {
                         Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
                             related_tournaments.push(game["tournament_id"]);
                         });
+
+
                         var related_games = [];
-                        Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
-                            related_games.push(game["id"]);
+                        Games.find({game_site_id: event_site["id"]}, {
+                            sort: {
+                                'start_time': 1
+                            }
+                        }).forEach(function (game) {
+                            related_games.push(game);
                         });
+
                         Fields.insert({
                             id: event_site["id"],
                             name: event_site["name"],
@@ -615,7 +625,7 @@ if (Meteor.isServer) {
 
     // Insert data which has not been inserted yet------------------------------
     var tids = [20019, 19750, 19747];
-    if (false) {
+    if (true) {
         tids.forEach(function (tid) {
             // Insert tournaments which are not in the db yet
             Meteor.call('updateTournament', tid);

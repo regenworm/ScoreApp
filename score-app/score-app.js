@@ -135,8 +135,11 @@ if (Meteor.isClient) {
             if(!this.games){
                 return;
             }
-            console.log(this.games);
-            return Games.find({id: {$in: this.games}}, {sort: {'start_time': 1}});
+            var related_games = this.games;
+            Fields.find({related_field: this.id}).forEach( function(field) {
+                related_games = related_games.concat(field["games"]);
+            });
+            return Games.find({id: {$in: related_games}}, {sort: {'start_time': 1}});
         },
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
@@ -179,7 +182,7 @@ if (Meteor.isClient) {
     Template.fieldView.helpers({
         settings: function() {
             return {
-                collection: Fields,
+                collection: Fields.find({related_field: null}),
                 showNavigation: 'always',
                 fields: [
                     {key: 'name', label: 'Name'}, 
@@ -541,9 +544,9 @@ if (Meteor.isClient) {
     });
 }
 
-if (Meteor.isServer) {
+if(Meteor.isServer) {
     // easy db reset
-    if (true) {
+    if(true) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -635,24 +638,32 @@ if (Meteor.isServer) {
 
             while (true) {
                 results.data["objects"].forEach(function (event_site) {
-                    if(Fields.find({id: event_site["id"]}).count() == 0) {
+                    var cur_id = event_site["id"];
+                    if(Fields.find({id: cur_id}).count() == 0) {
                         var related_tournaments = [];
-                        Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
+                        Games.find({game_site_id: cur_id}).forEach(function (game) {
                             related_tournaments.push(game["tournament_id"]);
                         });
 
 
                         var related_games = [];
-                        Games.find({game_site_id: event_site["id"]}).forEach(function (game) {
+                        Games.find({game_site_id: cur_id}).forEach(function (game) {
                             related_games.push(game["id"]);
                         });
 
+                        var related_field = null;
+                        var cur_name = event_site["name"];
+                        var field = Fields.findOne({name: cur_name});
+                        if(field) {
+                            related_field = field["id"];
+                        }
                         Fields.insert({
-                            id: event_site["id"],
-                            name: event_site["name"],
+                            id: cur_id,
+                            name: cur_name,
                             location: event_site["event_site"]["description"],
                             tournament_id: related_tournaments,
-                            games: related_games
+                            games: related_games,
+                            related_field: related_field
                         });
                     }
                 });
@@ -676,8 +687,8 @@ if (Meteor.isServer) {
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [20051];
-    if (true) {
+    var tids = [20051, 20019, 19750, 19747];
+    if(true) {
         tids.forEach(function (tid) {
             // Insert tournaments which are not in the db yet
             Meteor.call('updateTournament', tid);

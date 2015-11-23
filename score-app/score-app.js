@@ -11,8 +11,8 @@ Router.route('/', {
     name: 'home',
     template: 'homePage',
     onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
+        var current_user = Meteor.userId();
+        if (current_user) {
             this.next();
         }
         else {
@@ -24,8 +24,8 @@ Router.route('/field_overview', {
     name: 'field_overview',
     template: 'fieldView',
     onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
+        var current_user = Meteor.userId();
+        if (current_user) {
             this.next();
         }
         else {
@@ -37,12 +37,12 @@ Router.route('/field/:id', {
     name: 'field_games',
     template: 'field_games',
     data: function() {
-        var currentField = parseInt(this.params["id"]);
-        return Fields.findOne({id: currentField});
+        var curren_field = parseInt(this.params["id"]);
+        return Fields.findOne({id: current_field});
     },
     onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
+        var current_user = Meteor.userId();
+        if (current_user) {
             this.next();
         }
         else {
@@ -58,8 +58,8 @@ Router.route('/database', {
 Router.route('/register', {
     template: 'registerPage',
     onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
+        var current_user = Meteor.userId();
+        if (current_user) {
             Router.go('home');
         }
         else {
@@ -70,8 +70,8 @@ Router.route('/register', {
 Router.route('/login', {
     template: 'loginPage',
     onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
+        var current_user = Meteor.userId();
+        if (current_user) {
             Router.go('home');
         }
         else {
@@ -83,12 +83,12 @@ Router.route('/game/:id', {
     name: 'game',
     template: 'gameView',
     data: function() {
-        var currentGame = parseInt(this.params["id"]);
-        return Games.findOne({id: currentGame});
+        var current_game = parseInt(this.params["id"]);
+        return Games.findOne({id: current_game});
     },
     onBeforeAction: function() {
-        var currentUser = Meteor.userId();
-        if (currentUser) {
+        var current_user = Meteor.userId();
+        if (current_user) {
             this.next();
         }
         else {
@@ -286,24 +286,24 @@ if (Meteor.isClient) {
 
     Template.gameView.events({
         'click #nextGame': function() {
-            var currentGame = this;
-            currentField = Fields.findOne({id: currentGame["game_site_id"]});
-            gameIndex = currentField["games"].indexOf(currentGame["id"]);
-            if (gameIndex+1 < currentField["games"].length) {
-                gameIndex = currentField["games"][gameIndex+1]
-                path = '/game/'+gameIndex + '/';
+            var current_game = this;
+            current_field = Fields.findOne({id: current_game["game_site_id"]});
+            game_index = current_field["games"].indexOf(current_game["id"]);
+            if (game_index+1 < current_field["games"].length) {
+                game_index = current_field["games"][game_index+1]
+                path = '/game/'+game_index + '/';
                 Router.go(path);
             } else {
                 window.alert("This is the last game on this field.");
             }
         },
         'click #prevGame': function() {
-            var currentGame = this;
-            currentField = Fields.findOne({id: currentGame["game_site_id"]});
-            gameIndex = currentField["games"].indexOf(currentGame["id"]);
-            if (gameIndex > 0) {
-                gameIndex = currentField["games"][gameIndex-1]
-                path = '/game/'+gameIndex + '/';
+            var current_game = this;
+            current_field = Fields.findOne({id: current_game["game_site_id"]});
+            game_index = current_field["games"].indexOf(current_game["id"]);
+            if (game_index > 0) {
+                game_index = current_field["games"][game_index-1]
+                path = '/game/'+game_index + '/';
                 Router.go(path);
             } else {
                 window.alert("This is the first game on this field.");
@@ -312,20 +312,20 @@ if (Meteor.isClient) {
 
         // set field gps to current location
         'click #setGps': function() {
-            var currentGame = this;
+            var current_game = this;
             var pos = Session.get("cur_pos");
-            var currentField = Fields.findOne({id: currentGame["game_site_id"]});
-            Fields.update({_id: currentField["_id"]}, {$set: {location: pos}});
+            var current_field = Fields.findOne({id: current_game["game_site_id"]});
+            Fields.update({_id: current_field["_id"]}, {$set: {location: pos}});
         },
         'click #team_1_plus': function () {
-            var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {
+            var current_game = this;
+            Games.update({_id: current_game['_id']}, {
                 $inc: {
                     team_1_score: 1
                 }
             }); 
             Games.update(
-                {_id: currentGame['_id']}, {
+                {_id: current_game['_id']}, {
                 $push: {
                     history: {
                         user: Meteor.userId(), 
@@ -335,14 +335,14 @@ if (Meteor.isClient) {
             });
         },
         'click #team_2_plus': function () {
-            var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {
+            var current_game = this;
+            Games.update({_id: current_game['_id']}, {
                 $inc: {
                     team_2_score: 1
                 }
             }); 
             Games.update(
-                {_id: currentGame['_id']}, {
+                {_id: current_game['_id']}, {
                 $push: {
                     history: {
                         user: Meteor.userId(), 
@@ -352,8 +352,8 @@ if (Meteor.isClient) {
             });
         },
         'click #team_1_minus': function () {
-            var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {
+            var current_game = this;
+            Games.update({_id: current_game['_id']}, {
                 $inc: {
                     team_1_score: -1
                 }
@@ -369,14 +369,14 @@ if (Meteor.isClient) {
             });
         },
         'click #team_2_minus': function () {
-            var currentGame = this;
-            Games.update({_id: currentGame['_id']}, {
+            var current_game = this;
+            Games.update({_id: current_game['_id']}, {
                 $inc: {
                     team_2_score: -1
                 }
             }); 
             Games.update(
-                {_id: currentGame['_id']}, {
+                {_id: current_game['_id']}, {
                 $push: {
                     history: {
                         user: Meteor.userId(), 
@@ -389,10 +389,10 @@ if (Meteor.isClient) {
         // update teamcolors for all games that are after
         // the current game
         'click #colorpicker1': function () {
-            currentGame = this;
+            current_game = this;
             color = $('#colorpicker1').val();
             Games.find({team_1_id: this["team_1_id"]}).forEach(function (post) {
-                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
                     Games.update({_id: post._id}, {
                         $set: {
                             team_1_col: color
@@ -401,7 +401,7 @@ if (Meteor.isClient) {
                 }            
             });
             Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
-                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
                     Games.update({_id: post._id}, {
                         $set: {
                             team_2_col: color
@@ -411,10 +411,10 @@ if (Meteor.isClient) {
             });
         },
         'click #colorpicker2': function () {
-            currentGame = this;
+            current_game = this;
             color = $('#colorpicker2').val();
             Games.find({team_1_id: this["team_2_id"]}).forEach(function (post) {
-                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
                     Games.update({_id: post._id}, {
                         $set: {
                             team_1_col: color
@@ -424,7 +424,7 @@ if (Meteor.isClient) {
             });
             
             Games.find({team_2_id: this["team_2_id"]}).forEach(function (post) {
-                if (moment(currentGame.start_time).isAfter(post.start_time) || currentGame._id == post._id) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
                     Games.update({_id: post._id}, {
                         $set: {
                             team_2_col: color
@@ -606,6 +606,12 @@ if(Meteor.isServer) {
                     if (match["team_1_id"] === null || match["team_2_id"] === null || typeof(match["team_1_id"]) === undefined || typeof(match["team_2_id"]) === undefined) {
                         return false;
                     }
+
+                    var score_final = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_scores/?game_id="+match["id"]);
+                    console.log(match["id"]);
+                    console.log(score_final["objects"]);
+                    console.log(score_final["meta"]);
+
                     if (Games.find({id: match["id"]}).count() == 0) {
                         currentgame = {
                             id: match["id"],
@@ -620,6 +626,7 @@ if(Meteor.isServer) {
                             game_site_id: match["game_site_id"],
                             tournament_id: match["tournament_id"],
                             start_time: Date.parse(match["start_time"]),
+                            // is_final: score_final[0]["is_final"],
                             history: []
                         };
                         Games.insert(currentgame);
@@ -683,6 +690,21 @@ if(Meteor.isServer) {
                                                     "&grant_type=client_credentials&scope=universal");
 
             Session.setPersistent("tokens", results["acces_token"]);
+        },
+
+        updateScore: function(game) {
+            var requestbody = {
+                game_id: game["id"],
+                team_1_id: match["team_1_id"],
+                team_2_id: match["team_2_id"],
+                team_1_score: game["team_1_score"],
+                team_2_score: game["team_1_score"],
+                is_final: game["is_final"]
+            };
+
+            var tokens = Session.get("tokens");
+
+            var results  = Meteor.http.call("POST", "https://api.leaguevine.com/v1/game_scores/");
         }
     });
 

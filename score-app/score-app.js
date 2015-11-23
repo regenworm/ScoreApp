@@ -282,6 +282,31 @@ if (Meteor.isClient) {
     });
 
     Template.gameView.events({
+        'click #nextGame': function() {
+            var currentGame = this;
+            currentField = Fields.findOne({id: currentGame["game_site_id"]});
+            gameIndex = currentField["games"].indexOf(currentGame["id"]);
+            if (gameIndex+1 < currentField["games"].length) {
+                gameIndex = currentField["games"][gameIndex+1]
+                path = '/game/'+gameIndex + '/';
+                Router.go(path);
+            } else {
+                window.alert("This is the last game on this field.");
+            }
+        },
+        'click #prevGame': function() {
+            var currentGame = this;
+            currentField = Fields.findOne({id: currentGame["game_site_id"]});
+            gameIndex = currentField["games"].indexOf(currentGame["id"]);
+            if (gameIndex > 0) {
+                gameIndex = currentField["games"][gameIndex-1]
+                path = '/game/'+gameIndex + '/';
+                Router.go(path);
+            } else {
+                window.alert("This is the first game on this field.");
+            }
+        },
+
         // set field gps to current location
         'click #setGps': function() {
             var currentGame = this;
@@ -518,7 +543,7 @@ if (Meteor.isClient) {
 
 if (Meteor.isServer) {
     // easy db reset
-    if (false) {
+    if (true) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -636,12 +661,23 @@ if (Meteor.isServer) {
                 } 
                 results = Meteor.http.call("GET", results.data["meta"]["next"]);
             }
+        },
+
+        getToken: function() {
+            client_id = "04d5dc39a859c5cebd26b36a00568f";
+            client_secret = "54bd6343cd051bb322aed42c19d090";
+
+            var results = Meteor.http.call("GET", "https://www.leaguevine.com/oauth2/token/?client_id=" + client_id +
+                                                    "&client_secret=" + client_secret +
+                                                    "&grant_type=client_credentials&scope=universal");
+
+            Session.setPersistent("tokens", results["acces_token"]);
         }
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [20019, 19750, 19747];
-    if (false) {
+    var tids = [20051];
+    if (true) {
         tids.forEach(function (tid) {
             // Insert tournaments which are not in the db yet
             Meteor.call('updateTournament', tid);

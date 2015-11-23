@@ -18,11 +18,44 @@ html, body {
 #content {
     width: 100%;
     height: 100%;
-    background-color: white;
+    background-color: #fff;
 }
 
 #slideout-menu {
-    background-color: #ddd;
+    background: #DF314D;
+}
+
+#slideout-menu ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+#slideout-menu ul li {
+    margin: 0;
+}
+#slideout-menu ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+#slideout-menu ul li {
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 100;
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    border-bottom: 1px solid #C9223D;
+    -webkit-transition:  background 0.3s ease-in-out;
+    -moz-transition:  background 0.3s ease-in-out;
+    -ms-transition:  background 0.3s ease-in-out;
+    -o-transition:  background 0.3s ease-in-out;
+    transition:  background 0.3s ease-in-out;
+}
+#slideout-menu ul li:hover {
+    background: #C9223D;
+}
+#slideout-menu > ul > li >label,  #slideout-menu > ul > li > ul > li >label{
+    font-weight: 100;
 }
 
 .slideout-menu {
@@ -86,5 +119,7 @@ html, body {
     background-color:rgba(0, 0, 0, 0.85);
     z-index:9999;
     color:white;
-} 
+}
+
+
 /* game view*/

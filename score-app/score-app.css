@@ -25,6 +25,16 @@ html, body {
     background: #DF314D;
 }
 
+#slideout-menu ul li label{
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#slideout-menu ul li label {
+    cursor: pointer; cursor: hand;
+}
+
 #slideout-menu ul {
     margin: 0;
     padding: 0;
@@ -35,6 +45,9 @@ html, body {
 }
 #slideout-menu ul li a {
     color: #fff;
+    display: block;
+    width: 100%;
+    height: 100%;
     text-decoration: none;
 }
 #slideout-menu ul li {
@@ -53,6 +66,12 @@ html, body {
 }
 #slideout-menu ul li:hover {
     background: #C9223D;
+}
+#slideout-menu ul li ul li:hover {
+    background: #B9223C;
+}
+#slideout-menu ul li ul li a:hover {
+    background: #A9223B;
 }
 #slideout-menu > ul > li >label,  #slideout-menu > ul > li > ul > li >label{
     font-weight: 100;

@@ -1,6 +1,7 @@
 var Tournaments = new Meteor.Collection('tournaments');
 var Games = new Meteor.Collection('games');
 var Fields = new Meteor.Collection('fields');
+var Settings = new Meteor.Collection('settings');
 
 // Routes-----------------------------------------------------------------------
 Router.configure( {
@@ -95,6 +96,10 @@ Router.route('/game/:id', {
             Router.go('login');
         }
     }
+});
+Router.route('/settings', {
+    name: 'settings',
+    template: 'settings'
 });
 
 // Auto-close the sidebar on route stop (when navigating to a new route)
@@ -243,7 +248,98 @@ if (Meteor.isClient) {
         }
     });
 
+    Template.settings.helpers({
+        'tournaments': function() {
+            return Settings.findOne({})["tids"];
+        }
+    });
+
     // Event functions----------------------------------------------------------
+    Template.settings.events({
+        // pull tournaments from server
+        'click #reload': function() {
+            Games.find({}).forEach(function (post) {
+                Games.remove({_id: post["_id"]});
+            });
+            Tournaments.find({}).forEach(function (post) {
+                Tournaments.remove({_id: post["_id"]});
+            });
+            Fields.find({}).forEach(function (post) {
+                Fields.remove({_id: post["_id"]});
+            });
+
+            tids = Settings.findOne({})["tids"];
+
+            tids.forEach(function (tid) {
+                // Insert tournaments which are not in the db yet
+                Meteor.call('updateTournament', tid);
+
+                // Insert games rounds
+                Meteor.call("updateGames", tid);
+
+                // Insert fields
+                Meteor.call('updateFields', tid);
+            });
+            window.alert('Reload finished');
+        },
+        // add new tournament
+        'click #addTournament': function() {
+            var tids = [parseInt($('#addtour').val())];
+
+            tids.forEach(function (tid) {
+                // Insert tournaments which are not in the db yet
+                Meteor.call('updateTournament', tid, function(err,res) {
+                    if (res) {
+                        console.log("Tournaments added");
+                    }
+                });
+
+                // Insert games rounds
+                Meteor.call("updateGames", tid, function(err,res) {
+                    if (res) {
+                        console.log("Games added");
+                    }
+                });
+
+                // Insert fields
+                Meteor.call('updateFields', tid, function(err,res) {
+                    if (res) {
+                        console.log("Fields added");
+                    }
+                });
+            });
+
+            var settings = Settings.findOne({});
+            var tids2 = settings["tids"];
+            tids = tids2.concat(tids);
+
+            Settings.update({_id: settings["_id"]}, {tids: tids});
+
+            window.alert('Tournament added');
+        },
+        // remove tournament
+        'click #delTournament': function() {
+            var tid = [parseInt($('#deltour').val())];    
+            Games.find({tournament_id: tid}).forEach(function (post) {
+                Games.remove({_id: post["_id"]});
+            });
+            Tournaments.find({id: tid}).forEach(function (post) {
+                Tournaments.remove({_id: post["_id"]});
+            });
+            Fields.find({related_tournaments: tid}).forEach(function (post) {
+                Fields.remove({_id: post["_id"]});
+            });
+            console.log("Tournaments removed");
+            var settings = Settings.findOne({});
+            var tids = settings["tids"];
+            tid_index = tids.indexOf(tid);
+            tids = tids.splice(tid_index,1);
+            Settings.update({_id: settings["_id"]}, {tids: tids});
+
+            window.alert('Tournament Removed');
+        }
+    });
+
     Template.main.events({
         // set gps location
         'click #gps': function() {
@@ -580,7 +676,7 @@ if (Meteor.isClient) {
 
 if(Meteor.isServer) {
     // easy db reset
-    if(true) {
+    if(false) {
         Games.remove({});
         Tournaments.remove({});
         Fields.remove({});
@@ -696,7 +792,7 @@ if(Meteor.isServer) {
                         });
 
                         var related_field = null;
-                        var cur_name = game_site["name"];
+                        var cur_name = game_site["event_site"]["name"] + ", " + game_site["name"];
                         var field = Fields.findOne({name: cur_name});
                         if(field) {
                             related_field = field["id"];
@@ -763,7 +859,9 @@ if(Meteor.isServer) {
 
     // Insert data which has not been inserted yet------------------------------
     var tids = [20051, 20019, 19752, 19753]; //19751
-    if(true) {
+    Settings.insert({tids: tids});
+
+    if(false) {
         tids.forEach(function (tid) {
             // Insert tournaments which are not in the db yet
             Meteor.call('updateTournament', tid);

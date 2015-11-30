@@ -47,6 +47,7 @@
             <li><a href="{{pathFor route='login'}}">Login</a></li>
         {{/if}}
         <li><a href="{{pathFor route='database'}}">Database (debugging)</a></li>
+        <li><a href="{{pathFor route='settings'}}">Settings</a></li>
     </ul>
 </template>
 
@@ -278,4 +279,19 @@ location and yours -->
 <!-- Loading -->
 <template name="loading">
     <i class="fa fa-spinner fa-spin fa-4x"></i>
+</template>
+
+<template name="settings">
+    <div class="centerDiv">
+        <h1>Settings</h1>
+        <h3>Active Tournaments</h3>
+        <p>{{tournaments}}</p>
+        <input id="addtour" type="text">
+        <button id="addTournament">Add Tournament</button>
+        <br>
+        <input id="deltour" type="text">
+        <button id="delTournament">Remove Tournament</button>
+        <br>
+        <button id="reload">Reload Tournaments</button>
+    </div>
 </template>

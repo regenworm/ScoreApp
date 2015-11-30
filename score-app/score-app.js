@@ -476,37 +476,41 @@ if (Meteor.isClient) {
         },
         'click #team_1_minus': function () {
             var current_game = this;
-            Games.update({_id: current_game['_id']}, {
-                $inc: {
-                    team_1_score: -1
-                }
-            }); 
-            Games.update(
-                {_id: current_game['_id']}, {
-                $push: {
-                    history: {
-                        user: Meteor.userId(), 
-                        type:'team1-'
+            if (current_game["team_1_score"] != 0) {
+                Games.update({_id: current_game['_id']}, {
+                    $inc: {
+                        team_1_score: -1
                     }
-                }
-            });
+                }); 
+                Games.update(
+                    {_id: current_game['_id']}, {
+                    $push: {
+                        history: {
+                            user: Meteor.userId(), 
+                            type:'team1-'
+                        }
+                    }
+                });
+            };
         },
         'click #team_2_minus': function () {
             var current_game = this;
-            Games.update({_id: current_game['_id']}, {
-                $inc: {
-                    team_2_score: -1
-                }
-            }); 
-            Games.update(
-                {_id: current_game['_id']}, {
-                $push: {
-                    history: {
-                        user: Meteor.userId(), 
-                        type:'team2-'
+            if (current_game["team_2_score"] != 0) {
+                Games.update({_id: current_game['_id']}, {
+                    $inc: {
+                        team_2_score: -1
                     }
-                }
-            });
+                }); 
+                Games.update(
+                    {_id: current_game['_id']}, {
+                    $push: {
+                        history: {
+                            user: Meteor.userId(), 
+                            type:'team2-'
+                        }
+                    }
+                });
+            };
         },
 
         // update teamcolors for all games that are after

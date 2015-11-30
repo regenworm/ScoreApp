@@ -778,7 +778,7 @@ if(Meteor.isServer) {
             while (true) {
                 results.data["objects"].forEach(function (game_site) {
                     var cur_id = game_site["id"];
-                    if(Fields.find({id: cur_id}).count() == 0) {
+                    if(Fields.find({id: cur_id}).count() == 0 && Games.find({game_site_id: cur_id}).count() > 0) {
                         var related_tournaments = tid;
 
                         var related_tournaments = [];
@@ -859,6 +859,7 @@ if(Meteor.isServer) {
 
     // Insert data which has not been inserted yet------------------------------
     var tids = [20051, 20019, 19752, 19753]; //19751
+    Settings.remove({});
     Settings.insert({tids: tids});
 
     if(false) {

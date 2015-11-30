@@ -276,10 +276,6 @@ if (Meteor.isClient) {
             event.preventDefault();
             Meteor.logout();
             Router.go('login');
-        },
-        'click a': function (event) {
-            event.preventDefault();
-            slideout.close();
         }
     });
 
@@ -484,7 +480,7 @@ if (Meteor.isClient) {
         slideout = new Slideout({
             'panel': template.$('#content').get(0),
             'menu': template.$('#slideout-menu').get(0),
-            'padding': 600,
+            'padding': 300,
             'tolerance': 70
         });
     });
@@ -687,11 +683,6 @@ if(Meteor.isServer) {
                 results.data["objects"].forEach(function (game_site) {
                     var cur_id = game_site["id"];
                     if(Fields.find({id: cur_id}).count() == 0) {
-                        var related_tournaments = [];
-                        Games.find({game_site_id: cur_id}).forEach(function (game) {
-                            related_tournaments.push(game["tournament_id"]);
-                        });
-
 
                         var related_games = [];
                         Games.find({game_site_id: cur_id}).forEach(function (game) {
@@ -708,7 +699,6 @@ if(Meteor.isServer) {
                             id: cur_id,
                             name: cur_name,
                             location: game_site["event_site"]["description"],
-                            tournament_id: related_tournaments,
                             games: related_games,
                             related_field: related_field
                         });

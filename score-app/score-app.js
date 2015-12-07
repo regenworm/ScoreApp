@@ -271,7 +271,7 @@ if (Meteor.isClient) {
                 // Insert fields
                 Meteor.call('updateFields', tid);
             });
-            window.alert('Reload finished');
+            AntiModals.alert('Reload finished');
         },
         // add new tournament
         'click #addTournament': function() {
@@ -306,7 +306,7 @@ if (Meteor.isClient) {
 
             Settings.update({_id: settings["_id"]}, {tids: tids});
 
-            window.alert('Tournament added');
+            AntiModals.alert('Tournament added');
         },
         // remove tournament
         'click #delTournament': function() {
@@ -327,7 +327,7 @@ if (Meteor.isClient) {
             tids = tids.splice(tid_index,1);
             Settings.update({_id: settings["_id"]}, {tids: tids});
 
-            window.alert('Tournament Removed');
+            AntiModals.alert('Tournament Removed');
         }
     });
 
@@ -397,7 +397,7 @@ if (Meteor.isClient) {
                 path = '/game/'+game_index + '/';
                 Router.go(path);
             } else {
-                window.alert("This is the last game on this field.");
+                AntiModals.alert("This is the last game on this field.");
             }
         },
         'click #prevGame': function() {
@@ -420,7 +420,7 @@ if (Meteor.isClient) {
                 path = '/game/'+game_index + '/';
                 Router.go(path);
             } else {
-                window.alert("This is the first game on this field.");
+                AntiModals.alert("This is the first game on this field.");
             }
         },
 
@@ -447,6 +447,7 @@ if (Meteor.isClient) {
                     }
                 }
             });
+            Meteor.call('updateScore', current_game["id"]);
         },
         'click #team_2_plus': function () {
             var current_game = this;
@@ -464,6 +465,7 @@ if (Meteor.isClient) {
                     }
                 }
             });
+            Meteor.call('updateScore', current_game["id"]);
         },
         'click #team_1_minus': function () {
             var current_game = this;
@@ -482,6 +484,7 @@ if (Meteor.isClient) {
                         }
                     }
                 });
+                Meteor.call('updateScore', current_game["id"]);
             };
         },
         'click #team_2_minus': function () {
@@ -501,6 +504,7 @@ if (Meteor.isClient) {
                         }
                     }
                 });
+                Meteor.call('updateScore', current_game["id"]);
             };
         },
 
@@ -554,7 +558,7 @@ if (Meteor.isClient) {
         'click #isFinal': function () {
             event.preventDefault();
             if(moment().diff(moment(this["start_time"]), "weeks", true) > 2) {
-                window.alert("Sorry two weeks have passed, so you can't activate the game anymore.")
+                AntiModals.alert("Sorry two weeks have passed, so you can't activate the game anymore.")
             }
             else {
                     Games.update({_id: this['_id']}, {

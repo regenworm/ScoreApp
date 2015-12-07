@@ -436,17 +436,14 @@ if (Meteor.isClient) {
             Games.update({_id: current_game['_id']}, {
                 $inc: {
                     team_1_score: 1
-                }
-            }); 
-            Games.update(
-                {_id: current_game['_id']}, {
+                },
                 $push: {
                     history: {
                         user: Meteor.userId(), 
                         type:'team1+'
                     }
                 }
-            });
+            }); 
             Meteor.call('updateScore', current_game["id"]);
         },
         'click #team_2_plus': function () {
@@ -454,10 +451,7 @@ if (Meteor.isClient) {
             Games.update({_id: current_game['_id']}, {
                 $inc: {
                     team_2_score: 1
-                }
-            }); 
-            Games.update(
-                {_id: current_game['_id']}, {
+                },
                 $push: {
                     history: {
                         user: Meteor.userId(), 
@@ -473,17 +467,14 @@ if (Meteor.isClient) {
                 Games.update({_id: current_game['_id']}, {
                     $inc: {
                         team_1_score: -1
-                    }
-                }); 
-                Games.update(
-                    {_id: current_game['_id']}, {
+                    },
                     $push: {
                         history: {
                             user: Meteor.userId(), 
                             type:'team1-'
                         }
                     }
-                });
+                }); 
                 Meteor.call('updateScore', current_game["id"]);
             };
         },
@@ -493,17 +484,14 @@ if (Meteor.isClient) {
                 Games.update({_id: current_game['_id']}, {
                     $inc: {
                         team_2_score: -1
-                    }
-                }); 
-                Games.update(
-                    {_id: current_game['_id']}, {
+                    },
                     $push: {
                         history: {
                             user: Meteor.userId(), 
                             type:'team2-'
                         }
                     }
-                });
+                }); 
                 Meteor.call('updateScore', current_game["id"]);
             };
         },

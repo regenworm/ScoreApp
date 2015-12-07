@@ -21,6 +21,8 @@ caching-html-compiler@1.0.2
 callback-hook@1.0.4
 check@1.0.6
 chriswessels:slideout@0.1.9_2
+coffeescript@1.0.10
+dburles:mongo-collection-instances@0.3.4
 ddp@1.2.2
 ddp-client@1.2.1
 ddp-common@1.2.1
@@ -37,6 +39,7 @@ fastclick@1.0.7
 fortawesome:fontawesome@4.4.0
 geojson-utils@1.0.4
 hot-code-push@1.0.0
+houston:admin@2.0.6
 html-tools@1.0.5
 htmljs@1.0.5
 http@1.1.1
@@ -51,6 +54,7 @@ iron:middleware-stack@1.0.11
 iron:router@1.0.12
 iron:url@1.0.11
 jquery@1.11.4
+lai:collection-extensions@0.1.4
 launch-screen@1.0.4
 less@2.5.0_3
 livedata@1.0.15
@@ -89,6 +93,7 @@ standard-minifiers@1.0.1
 templating@1.1.4
 templating-tools@1.0.0
 themeteorchef:jquery-validation@1.14.0
+tmeasday:paginated-subscription@0.2.4
 tracker@1.0.9
 twbs:bootstrap@3.3.5
 u2622:persistent-session@0.4.4

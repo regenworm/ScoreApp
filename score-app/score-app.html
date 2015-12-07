@@ -115,6 +115,7 @@ location and yours -->
 
 <!-- What happens on a game view -->
 <template name="gameView">
+    {{init_page}}
     <div class="row">
         <div class="col-xs-5 centerDiv">
             <button id="prevGame">Previous Game</button>
@@ -125,7 +126,6 @@ location and yours -->
             <button id="nextGame">Next Game</button>
         </div>
     </div>
-    {{select_color team_1_col team_2_col}}
     <div class="row">
         <div class="col-xs-12 centerDiv">
             <h2>{{parsed_time}}</h2>

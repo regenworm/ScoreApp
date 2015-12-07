@@ -159,7 +159,9 @@ if (Meteor.isClient) {
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
         },
-        'select_color': function(col1, col2) {
+        'init_page': function() {
+            var col1 = this["team_1_col"];
+            var col2 = this["team_2_col"];
             if (col1) {
                 $('#colorpicker1').val(col1);
             }

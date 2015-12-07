@@ -174,17 +174,6 @@ if (Meteor.isClient) {
         },
         'gpsSet': function() {
             return Session.get("cur_pos");
-        },
-        'leftGame': function() {
-            var field = Fields.findOne({id: this.game_site_id});
-            if(!field) {
-                return;
-            }
-            var games = field["games"];
-            console.log(games);
-        },
-        'rightGame': function() {
-            console.log(this);
         }
     });
 
@@ -515,7 +504,7 @@ if (Meteor.isClient) {
 
         // update teamcolors for all games that are after
         // the current game
-        'click #colorpicker1': function () {
+        'change #colorpicker1': function () {
             current_game = this;
             color = $('#colorpicker1').val();
             Games.find({team_1_id: this["team_1_id"]}).forEach(function (post) {
@@ -537,7 +526,7 @@ if (Meteor.isClient) {
                 }           
             });
         },
-        'click #colorpicker2': function () {
+        'change #colorpicker2': function () {
             current_game = this;
             color = $('#colorpicker2').val();
             Games.find({team_1_id: this["team_2_id"]}).forEach(function (post) {
@@ -562,14 +551,17 @@ if (Meteor.isClient) {
         },
         'click #isFinal': function () {
             event.preventDefault();
-            var current_game = this;
-            Games.update({_id: current_game['_id']}, {
-                $set: {
-                    is_final: !this["is_final"]
-                }
-            }); 
-            $("div.overlay").fadeToggle("fast");
-
+            if(moment().diff(moment(this["start_time"]), "weeks", true) > 2) {
+                window.alert("Sorry two weeks have passed, so you can't activate the game anymore.")
+            }
+            else {
+                    Games.update({_id: this['_id']}, {
+                    $set: {
+                        is_final: !this["is_final"]
+                    }
+                }); 
+                $("div.overlay").fadeToggle("fast");
+            }
         }
     });
 

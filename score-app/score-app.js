@@ -51,11 +51,6 @@ Router.route('/field/:id', {
         }
     }
 });
-// Later verwijderen
-Router.route('/database', {
-    name: 'database',
-    template: 'database'
-});
 Router.route('/register', {
     template: 'registerPage',
     onBeforeAction: function() {
@@ -168,6 +163,12 @@ if (Meteor.isClient) {
             if (col2) {
                 $('#colorpicker2').val(col2);
             }
+            // Set is_final true if 2 weeks have passed
+            if(moment().diff(moment(this["start_time"]), "weeks", true) > 2 &&
+                !this["is_final"]) {
+                Games.update({_id: this['_id']}, {$set: {is_final: !this["is_final"]}});
+                Meteor.call('updateScore', this["id"]);
+            }
             if (this["is_final"]) {
                 $("div.overlay").css({"display": "block"});
             } else {
@@ -176,6 +177,20 @@ if (Meteor.isClient) {
         },
         'gpsSet': function() {
             return Session.get("cur_pos");
+        },
+        'tournament_name': function() {
+            var tournament = Tournaments.findOne({id: this["tournament_id"]});
+            if(!tournament) {
+                return;
+            }
+            return tournament["name"];
+        },
+        'field_name': function() {
+            var field = Fields.findOne({id: this["game_site_id"]});
+            if(!field) {
+                return;
+            }
+            return field["name"];
         }
     });
 
@@ -217,25 +232,6 @@ if (Meteor.isClient) {
                         }
                     }]
             };
-        }
-    });
-
-    // Later verwijderen
-    Template.database.helpers({
-        Fields: function() {
-            return Fields;
-        },
-        Games: function() {
-            return Games;
-        },
-        Tournaments: function() {
-            return Tournaments;
-        }
-    });
-    Template.database.events({
-        'click .reactive-table tbody tr': function(event) {
-            var field = this;
-            console.log(this);
         }
     });
 

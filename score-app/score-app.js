@@ -11,15 +11,6 @@ Router.configure( {
 Router.route('/', {
     name: 'home',
     template: 'homePage',
-    onBeforeAction: function() {
-        var current_user = Meteor.userId();
-        if (current_user) {
-            this.next();
-        }
-        else {
-            Router.go('login');
-        }
-    }
 });
 Router.route('/field_overview', {
     name: 'field_overview',
@@ -149,7 +140,6 @@ if (Meteor.isClient) {
         }
     });
 
-    // Find the parsed time of a game
     Template.gameView.helpers({
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
@@ -163,20 +153,11 @@ if (Meteor.isClient) {
             if (col2) {
                 $('#colorpicker2').val(col2);
             }
-            // Set is_final true if 2 weeks have passed
-            if(moment().diff(moment(this["start_time"]), "weeks", true) > 2 &&
-                !this["is_final"]) {
-                Games.update({_id: this['_id']}, {$set: {is_final: !this["is_final"]}});
-                Meteor.call('updateScore', this["id"]);
-            }
             if (this["is_final"]) {
-                $("div.overlay").css({"display": "block"});
+                $("div.overlay_score").css({"display": "block"});
             } else {
-                $("div.overlay").css({"display": "none"});
+                $("div.overlay_score").css({"display": "none"});
             }
-        },
-        'gpsSet': function() {
-            return Session.get("cur_pos");
         },
         'tournament_name': function() {
             var tournament = Tournaments.findOne({id: this["tournament_id"]});
@@ -191,6 +172,11 @@ if (Meteor.isClient) {
                 return;
             }
             return field["name"];
+        },
+        'over_time': function() {
+            if(moment().diff(moment(this["start_time"]), "weeks", true) > 2) {
+                return true;   
+            }
         }
     });
 
@@ -422,10 +408,15 @@ if (Meteor.isClient) {
 
         // set field gps to current location
         'click #setGps': function() {
-            var current_game = this;
-            var pos = Session.get("cur_pos");
-            var current_field = Fields.findOne({id: current_game["game_site_id"]});
-            Fields.update({_id: current_field["_id"]}, {$set: {location: pos}});
+            if (Session.get("cur_pos")) {
+                var current_game = this;
+                var pos = Session.get("cur_pos");
+                var current_field = Fields.findOne({id: current_game["game_site_id"]});
+                Fields.update({_id: current_field["_id"]}, {$set: {location: pos}});
+            }
+            else {
+                AntiModals.alert("Please set your gps location first by clicking the gps button next to the menu button!")
+            }
         },
         'click #team_1_plus': function () {
             var current_game = this;
@@ -541,17 +532,12 @@ if (Meteor.isClient) {
         },
         'click #isFinal': function () {
             event.preventDefault();
-            if(moment().diff(moment(this["start_time"]), "weeks", true) > 2) {
-                AntiModals.alert("Sorry two weeks have passed, so you can't activate the game anymore.")
-            }
-            else {
-                    Games.update({_id: this['_id']}, {
-                    $set: {
-                        is_final: !this["is_final"]
-                    }
-                }); 
-                $("div.overlay").fadeToggle("fast");
-            }
+            Games.update({_id: this['_id']}, {
+                $set: {
+                    is_final: !this["is_final"]
+                }
+            }); 
+            $("div.overlay").fadeToggle("fast");
         }
     });
 

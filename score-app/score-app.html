@@ -16,15 +16,21 @@
         {{> menuItems}}
     </div>
     <div id="content">
-        <button id="toggle">
-            <i class="fa fa-bars"></i>
-        </button>
-        <!-- get position -->
-        <button id="gps"><i class="fa fa-location-arrow"></i></button>
-        <h1 class="centerDiv">Score App</h1>
-        {{> yield}}
-        <hr />
-        <p>Copyright &copy; Tournaments, 2015-2016.</p>
+        <div id="header">
+            <button id="toggle">
+                <i class="fa fa-bars"></i>
+            </button>
+            <!-- get position -->
+            <button id="gps"><i class="fa fa-location-arrow"></i></button>
+            <h1 class="centerDiv">Score App</h1>
+        </div>
+        <div id="body">
+            {{> yield}}
+        </div>
+        <div id="footer">
+            <hr />
+            <p>Copyright &copy; Tournaments, 2015-2016.</p>
+        </div>
     </div>
 </template>
 
@@ -80,7 +86,13 @@
 
 <!-- Home page -->
 <template name="homePage">
-    <p>HomePage</p>
+    <h4>
+        <center>
+            Welcome to our score keeping app!<br>
+            Slide to the right to find the menu for navigation.<br>
+            Please register and login before making use of the app.
+        </center>
+    </h4>
 </template>
 
 <!-- Show all the fields and sort them on the distance between the fields 
@@ -138,21 +150,25 @@ location and yours -->
     </div>
     <div class="row">
         <div class="col-xs-5 centerDiv team_1_col" style="background-color: {{team_1_col}}">
-            <button id="team_1_plus" class="btn btn-default">
-                <i class="fa fa-plus fa-2x"></i>
-            </button>
-            <div class="overlay">
-                <i class="fa fa-ban fa-3x"></i>
-            </div>
+            {{#unless over_time}}
+                <button id="team_1_plus" class="btn btn-default">
+                    <i class="fa fa-plus fa-2x"></i>
+                </button>
+                <div class="overlay_score">
+                    <i class="fa fa-ban fa-3x"></i>
+                </div>
+            {{/unless}}
         </div>
         <div class="col-xs-2"></div>
         <div class="col-xs-5 centerDiv team_2_col" style="background-color: {{team_2_col}}">
-            <button id="team_2_plus" class="btn btn-default">
-                <i class="fa fa-plus fa-2x"></i>
-            </button>
-            <div class="overlay">
-                <i class="fa fa-ban fa-3x"></i>
-            </div>
+            {{#unless over_time}}
+                <button id="team_2_plus" class="btn btn-default">
+                    <i class="fa fa-plus fa-2x"></i>
+                </button>
+                <div class="overlay_score">
+                    <i class="fa fa-ban fa-3x"></i>
+                </div>
+            {{/unless}}
         </div>
     </div>
     <div class="row">
@@ -168,21 +184,25 @@ location and yours -->
     </div>
     <div class="row">
         <div class="col-xs-5 centerDiv team_1_col" style="background-color: {{team_1_col}}">
-            <button id="team_1_minus" class="btn btn-default">
-                <i class="fa fa-minus fa-2x"></i>
-            </button>
-            <div class="overlay">
-                <i class="fa fa-ban fa-3x"></i>
-            </div>
+            {{#unless over_time}}
+                <button id="team_1_minus" class="btn btn-default">
+                    <i class="fa fa-minus fa-2x"></i>
+                </button>
+                <div class="overlay_score">
+                    <i class="fa fa-ban fa-3x"></i>
+                </div>
+            {{/unless}}
         </div>
         <div class="col-xs-2"></div>
         <div class="col-xs-5 centerDiv team_2_col" style="background-color: {{team_2_col}}">
-            <button id="team_2_minus" class="btn btn-default">
-                <i class="fa fa-minus fa-2x"></i>
-            </button>
-            <div class="overlay">
-                <i class="fa fa-ban fa-3x"></i>
-            </div>
+            {{#unless over_time}}
+                <button id="team_2_minus" class="btn btn-default">
+                    <i class="fa fa-minus fa-2x"></i>
+                </button>
+                <div class="overlay_score">
+                    <i class="fa fa-ban fa-3x"></i>
+                </div>
+            {{/unless}}
         </div>
     </div>
     <div class="row" id="viscue">
@@ -190,16 +210,16 @@ location and yours -->
             <select id="colorpicker1">
                 <option value="#fff">None</option>
                 <option value="#7bd148">Green</option>
-                <option value="#5484ed">Bold blue</option>
+                <option value="#0101df">Bold blue</option>
                 <option value="#a4bdfc">Blue</option>
                 <option value="#46d6db">Turquoise</option>
                 <option value="#7ae7bf">Light green</option>
                 <option value="#51b749">Bold green</option>
-                <option value="#fbd75b">Yellow</option>
+                <option value="#ffff00">Yellow</option>
                 <option value="#ffb878">Orange</option>
                 <option value="#ff887c">Red</option>
                 <option value="#dc2127">Bold red</option>
-                <option value="#dbadff">Purple</option>
+                <option value="#8000ff">Purple</option>
                 <option value="#e1e1e1">Gray</option>
             </select>
         </div>
@@ -208,57 +228,55 @@ location and yours -->
             <select id="colorpicker2">
                 <option value="#fff">None</option>
                 <option value="#7bd148">Green</option>
-                <option value="#5484ed">Bold blue</option>
+                <option value="#0101df">Bold blue</option>
                 <option value="#a4bdfc">Blue</option>
                 <option value="#46d6db">Turquoise</option>
                 <option value="#7ae7bf">Light green</option>
                 <option value="#51b749">Bold green</option>
-                <option value="#fbd75b">Yellow</option>
+                <option value="#ffff00">Yellow</option>
                 <option value="#ffb878">Orange</option>
                 <option value="#ff887c">Red</option>
                 <option value="#dc2127">Bold red</option>
-                <option value="#dbadff">Purple</option>
+                <option value="#8000ff">Purple</option>
                 <option value="#e1e1e1">Gray</option>
             </select>
         </div>
     </div>
     <br>
     <!-- update position field -->
-    {{#if gpsSet}}
-        <button id="setGps">
-            <i class="fa fa-map-marker"></i>
-        </button>
-        Click here to set this fields location to yours!
-    {{else}}
-        <button id="setGps" disabled>
-            <i class="fa fa-map-marker"></i>
-        </button>
-        Set your gps location by clicking the gps button next to the menu button!
-    {{/if}}
-    <button id="isFinal">
-        <i class="icon-minus-sign"></i>
-        Deactivate Game
+    <button id="setGps">
+        <i class="fa fa-map-marker"></i>
     </button>
+    Click here to set this fields location to yours!
+    {{#unless over_time}}
+        <button id="isFinal">
+            Deactivate Game
+        </button>
+    {{/unless}}
 </template>
 
 <!-- Register page -->
 <template name="registerPage">
-    <h2>Register</h2>
-    <form class="register">
-        <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
-        <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
-        <p><input type="submit" value="Register"></p>
-    </form>
+    <div style="margin-left: 10px;">
+        <h2>Register</h2>
+        <form class="register">
+            <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
+            <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
+            <p><input type="submit" value="Register"></p>
+        </form>
+    </div>
 </template>
 
 <!-- Login page -->
 <template name="loginPage">
-    <h2>Login</h2>
-    <form class="login">
-        <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
-        <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
-        <p><input type="submit" value="Login"></p>
-    </form>
+    <div style="margin-left: 10px;">
+        <h2>Login</h2>
+        <form class="login">
+            <p> <i class="fa fa-envelope-o fa-fw"></i> <input type="email" name="email" required placeholder="Email address"></p>
+            <p> <i class="fa fa-key fa-fw"></i> <input type="password" name="password" required placeholder="Password"></p>
+            <p><input type="submit" value="Login"></p>
+        </form>
+    </div>
 </template>
 
 <!-- Loading -->

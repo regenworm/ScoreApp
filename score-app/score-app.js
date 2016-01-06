@@ -431,7 +431,9 @@ if (Meteor.isClient) {
                     }
                 }
             }); 
-            Meteor.call('updateScore', current_game["id"]);
+            if (Meteor.call('updateScore', current_game["id"])) {
+                AntiModals.alert("An error occured, please try again.");
+            }
         },
         'click #team_2_plus': function () {
             var current_game = this;
@@ -446,7 +448,9 @@ if (Meteor.isClient) {
                     }
                 }
             });
-            Meteor.call('updateScore', current_game["id"]);
+            if (Meteor.call('updateScore', current_game["id"])) {
+                AntiModals.alert("An error occured, please try again.");
+            }
         },
         'click #team_1_minus': function () {
             var current_game = this;
@@ -462,7 +466,9 @@ if (Meteor.isClient) {
                         }
                     }
                 }); 
-                Meteor.call('updateScore', current_game["id"]);
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
+                }
             };
         },
         'click #team_2_minus': function () {
@@ -479,7 +485,9 @@ if (Meteor.isClient) {
                         }
                     }
                 }); 
-                Meteor.call('updateScore', current_game["id"]);
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
+                }
             };
         },
 
@@ -736,7 +744,7 @@ if(Meteor.isServer) {
                             score_last_updated: scores_last_updated
                         };
                         Games.insert(current_game);
-                    } else if (moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"]) || moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated)) {
+                    } else if (moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"])) {
                         current_game = {
                             id: match["id"],
                             team_1_id: match["team_1_id"],
@@ -750,6 +758,19 @@ if(Meteor.isServer) {
                             start_time: Date.parse(match["start_time"]),
                             is_final: score_final,
                             time_last_updated: match["time_last_updated"],
+                            score_last_updated: scores_last_updated
+                        };
+                        Games.update({id: match["id"]},{$set: current_game});
+                    } else if (moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated)) {
+                        current_game = {
+                            team_1_id: match["team_1_id"],
+                            team_1_name: match["team_1"]["name"],
+                            team_1_score: match["team_1_score"],
+                            team_2_id: match["team_2_id"],
+                            team_2_name: match["team_2"]["name"],
+                            team_2_score: match["team_2_score"],
+                            start_time: Date.parse(match["start_time"]),
+                            is_final: score_final,
                             score_last_updated: scores_last_updated
                         };
                         Games.update({id: match["id"]},{$set: current_game});
@@ -838,6 +859,7 @@ if(Meteor.isServer) {
         },
 
         updateScore: function(game) {
+            var failure = false
             game = Games.findOne({id: game});
             var requestbody = {
                 'data': {
@@ -859,13 +881,15 @@ if(Meteor.isServer) {
                                             requestbody,
                                             function (error, result) {
                                                 if (result) {
-                                                    Games.update({id: match["id"]},{$set: {scores_last_updated: result["time_last_updated"]}})
+                                                    Games.update({id: game["id"]},{$set: {scores_last_updated: result["time_last_updated"]}})
                                                 }
                                                 if (error) {
-                                                    console.log(error);
+                                                    failure = true
                                                 }
                                             }
-          );
+            );
+
+            return failure
         }
     });
 
@@ -877,7 +901,7 @@ if(Meteor.isServer) {
     SyncedCron.add({
         name: 'LeaguevineSync',
             schedule: function(parser) {
-            return parser.text('every 2 minutes');
+            return parser.text('every 4 minutes');
         },
             job: function() {
                 tids = [20065,20051, 20019, 19752, 19753];

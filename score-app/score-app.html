@@ -138,14 +138,22 @@ location and yours -->
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-5 centerDiv team_1_col" style="background-color: {{team_1_col}}">
-            <h2>{{team_1_name}}</h2>
-        </div>
-        <div class="col-xs-2 centerDiv">
-            <h2>VS</h2>
-        </div>
-        <div class="col-xs-5 centerDiv team_2_col" style="background-color: {{team_2_col}}">
-            <h2>{{team_2_name}}</h2>
+        <div class="row-height">
+            <div class="col-xs-5 centerDiv team_1_col col-height" style="background-color: {{team_1_col}}">
+                <div class="inside inside-full-height">
+                    <h2>{{team_1_name}}</h2>
+                </div>
+            </div>
+            <div class="col-xs-2 centerDiv col-height">
+                <div class="inside inside-full-height">
+                    <h2>VS</h2>
+                </div>
+            </div>
+            <div class="col-xs-5 centerDiv team_2_col col-height" style="background-color: {{team_2_col}}">
+                <div class="inside inside-full-height">
+                    <h2>{{team_2_name}}</h2>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -247,7 +255,9 @@ location and yours -->
     <button id="setGps">
         <i class="fa fa-map-marker"></i>
     </button>
-    Click here to set this fields location to yours!
+    <p>
+        Click here to set this fields location to yours!
+    </p>
     {{#unless over_time}}
         <button id="isFinal">
             Deactivate Game

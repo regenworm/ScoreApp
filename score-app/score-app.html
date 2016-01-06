@@ -48,11 +48,13 @@
                 {{> loading}}
             {{/if}}
             <li><a href="#" class="logout">Logout</a></li>
+            {{#if admin_status}}
+                <li><a href="/admin">Admin</a></li>
+            {{/if}}
         {{else}}
             <li><a href="{{pathFor route='register'}}">Register</a></li>
             <li><a href="{{pathFor route='login'}}">Login</a></li>
         {{/if}}
-        <li><a href="{{pathFor route='settings'}}">Settings</a></li>
     </ul>
 </template>
 
@@ -252,11 +254,11 @@ location and yours -->
     </div>
     <br>
     <!-- update position field -->
-    <button id="setGps">
-        <i class="fa fa-map-marker"></i>
-    </button>
     <p>
-        Click here to set this fields location to yours!
+        <button id="setGps">
+            <i class="fa fa-map-marker"></i>
+        </button>
+        Click here to set this field's location to yours!
     </p>
     {{#unless over_time}}
         <button id="isFinal">
@@ -292,19 +294,4 @@ location and yours -->
 <!-- Loading -->
 <template name="loading">
     <i class="fa fa-spinner fa-spin fa-4x"></i>
-</template>
-
-<template name="settings">
-    <div class="centerDiv">
-        <h1>Settings</h1>
-        <h3>Active Tournaments</h3>
-        <p>{{tournaments}}</p>
-        <input id="addtour" type="text">
-        <button id="addTournament">Add Tournament</button>
-        <br>
-        <input id="deltour" type="text">
-        <button id="delTournament">Remove Tournament</button>
-        <br>
-        <button id="reload">Reload Tournaments</button>
-    </div>
 </template>

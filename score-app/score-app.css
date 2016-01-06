@@ -1,6 +1,3 @@
-
-
-
 @import url(https://fonts.googleapis.com/css?family=Oxygen:300);
 
 /* CSS declarations go here */
@@ -176,7 +173,13 @@ html, body {
     color:white;
 }
 
-/*Same height columns*/
+/*
+######################################################################
+##
+## Same height columns
+##
+######################################################################
+*/
 .inside {
   margin-top: 20px;
   margin-bottom: 20px;

@@ -1,7 +1,6 @@
 var Tournaments = new Meteor.Collection('tournaments');
 var Games = new Meteor.Collection('games');
 var Fields = new Meteor.Collection('fields');
-var Settings = new Meteor.Collection('settings');
 
 // Routes-----------------------------------------------------------------------
 Router.configure( {
@@ -83,10 +82,6 @@ Router.route('/game/:id', {
         }
     }
 });
-Router.route('/settings', {
-    name: 'settings',
-    template: 'settings'
-});
 
 // Auto-close the sidebar on route stop (when navigating to a new route)
 Router.onStop(function () {
@@ -96,13 +91,19 @@ Router.onStop(function () {
 });
 
 if (Meteor.isClient) {
-
-
     // Helper functions---------------------------------------------------------
     // Find all tournaments
     Template.menuItems.helpers( {
         'tournament': function() {
             return Tournaments.find({}, {sort: {name: 1}});
+        },
+        // check if user is admin
+        'admin_status': function() {
+            if (Houston._admins.find({user_id: Meteor.userId()}).count() > 0) {
+                return true
+            } else {
+                return false
+            }
         }
     });
 
@@ -221,98 +222,7 @@ if (Meteor.isClient) {
         }
     });
 
-    Template.settings.helpers({
-        'tournaments': function() {
-            return Settings.findOne({})["tids"];
-        }
-    });
-
     // Event functions----------------------------------------------------------
-    Template.settings.events({
-        // pull tournaments from server
-        'click #reload': function() {
-            Games.find({}).forEach(function (post) {
-                Games.remove({_id: post["_id"]});
-            });
-            Tournaments.find({}).forEach(function (post) {
-                Tournaments.remove({_id: post["_id"]});
-            });
-            Fields.find({}).forEach(function (post) {
-                Fields.remove({_id: post["_id"]});
-            });
-
-            tids = Settings.findOne({})["tids"];
-
-            tids.forEach(function (tid) {
-                // Insert tournaments which are not in the db yet
-                Meteor.call('updateTournament', tid);
-
-                // Insert games rounds
-                Meteor.call("updateGames", tid);
-
-                // Insert fields
-                Meteor.call('updateFields', tid);
-            });
-            AntiModals.alert('Reload finished');
-        },
-        // add new tournament
-        'click #addTournament': function() {
-            var tids = [parseInt($('#addtour').val())];
-
-            tids.forEach(function (tid) {
-                // Insert tournaments which are not in the db yet
-                Meteor.call('updateTournament', tid, function(err,res) {
-                    if (res) {
-                        console.log("Tournaments added");
-                    }
-                });
-
-                // Insert games rounds
-                Meteor.call("updateGames", tid, function(err,res) {
-                    if (res) {
-                        console.log("Games added");
-                    }
-                });
-
-                // Insert fields
-                Meteor.call('updateFields', tid, function(err,res) {
-                    if (res) {
-                        console.log("Fields added");
-                    }
-                });
-            });
-
-            var settings = Settings.findOne({});
-            var tids2 = settings["tids"];
-            tids = tids2.concat(tids);
-
-            Settings.update({_id: settings["_id"]}, {tids: tids});
-
-            AntiModals.alert('Tournament added');
-        },
-        // remove tournament
-        'click #delTournament': function() {
-            var tid = [parseInt($('#deltour').val())];    
-            Games.find({tournament_id: tid}).forEach(function (post) {
-                Games.remove({_id: post["_id"]});
-            });
-            Tournaments.find({id: tid}).forEach(function (post) {
-                Tournaments.remove({_id: post["_id"]});
-            });
-            Fields.find({related_tournaments: tid}).forEach(function (post) {
-                Fields.remove({_id: post["_id"]});
-            });
-            console.log("Tournaments removed");
-            var settings = Settings.findOne({});
-            var tids = settings["tids"];
-            tid_index = tids.indexOf(tid);
-            tids = tids.splice(tid_index,1);
-            Settings.update({_id: settings["_id"]}, {tids: tids});
-
-            AntiModals.alert('Tournament Removed');
-        }
-    });
-
     Template.main.events({
         // set gps location
         'click #gps': function() {
@@ -350,10 +260,10 @@ if (Meteor.isClient) {
 
     // When the user clicks on a menu entry, show/hide
     Template.menuTournament.events( {
-        'click .tournament': function() {
+        'click .tournament': function(event) {
             $(event.target).siblings().slideToggle();
         },
-        'click .field': function() {
+        'click .field': function(event) {
             $(event.target).siblings().slideToggle();
         }
     });
@@ -420,41 +330,46 @@ if (Meteor.isClient) {
         },
         'click #team_1_plus': function () {
             var current_game = this;
-            Games.update({_id: current_game['_id']}, {
-                $inc: {
-                    team_1_score: 1
-                },
-                $push: {
-                    history: {
-                        user: Meteor.userId(), 
-                        type:'team1+'
+            if (current_game["is_final"] == false) {
+                Games.update({_id: current_game['_id']}, {
+                    $inc: {
+                        team_1_score: 1
+                    },
+                    $push: {
+                        history: {
+                            user: Meteor.userId(), 
+                            type:'team1+'
+                        }
                     }
+                }); 
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
                 }
-            }); 
-            if (Meteor.call('updateScore', current_game["id"])) {
-                AntiModals.alert("An error occured, please try again.");
             }
         },
         'click #team_2_plus': function () {
             var current_game = this;
-            Games.update({_id: current_game['_id']}, {
-                $inc: {
-                    team_2_score: 1
-                },
-                $push: {
-                    history: {
-                        user: Meteor.userId(), 
-                        type:'team2+'
+
+            if (current_game["is_final"] == false) {
+                Games.update({_id: current_game['_id']}, {
+                    $inc: {
+                        team_2_score: 1
+                    },
+                    $push: {
+                        history: {
+                            user: Meteor.userId(), 
+                            type:'team2+'
+                        }
                     }
+                });
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
                 }
-            });
-            if (Meteor.call('updateScore', current_game["id"])) {
-                AntiModals.alert("An error occured, please try again.");
             }
         },
         'click #team_1_minus': function () {
             var current_game = this;
-            if (current_game["team_1_score"] != 0) {
+            if (current_game["team_1_score"] != 0 && current_game["is_final"] == false) {
                 Games.update({_id: current_game['_id']}, {
                     $inc: {
                         team_1_score: -1
@@ -473,7 +388,7 @@ if (Meteor.isClient) {
         },
         'click #team_2_minus': function () {
             var current_game = this;
-            if (current_game["team_2_score"] != 0) {
+            if (current_game["team_2_score"] != 0 && current_game["is_final"] == false) {
                 Games.update({_id: current_game['_id']}, {
                     $inc: {
                         team_2_score: -1
@@ -894,9 +809,9 @@ if(Meteor.isServer) {
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [20051, 20019, 19752, 19753,20065]; //19751
-    Settings.remove({});
-    Settings.insert({tids: tids});
+    var tids = [20051, 20019, 19752, 19753,20065];
+    Houston.add_collection(Meteor.users);
+    Houston.add_collection(Houston._admins);
 
     SyncedCron.add({
         name: 'LeaguevineSync',

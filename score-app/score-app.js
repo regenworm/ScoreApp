@@ -1,7 +1,6 @@
 var Tournaments = new Meteor.Collection('tournaments');
 var Games = new Meteor.Collection('games');
 var Fields = new Meteor.Collection('fields');
-var Settings = new Meteor.Collection('settings');
 
 // Routes-----------------------------------------------------------------------
 Router.configure( {
@@ -83,10 +82,6 @@ Router.route('/game/:id', {
         }
     }
 });
-Router.route('/settings', {
-    name: 'settings',
-    template: 'settings'
-});
 
 // Auto-close the sidebar on route stop (when navigating to a new route)
 Router.onStop(function () {
@@ -96,13 +91,19 @@ Router.onStop(function () {
 });
 
 if (Meteor.isClient) {
-
-
     // Helper functions---------------------------------------------------------
     // Find all tournaments
     Template.menuItems.helpers( {
         'tournament': function() {
             return Tournaments.find({}, {sort: {name: 1}});
+        },
+        // check if user is admin
+        'admin_status': function() {
+            if (Houston._admins.find({user_id: Meteor.userId()}).count() > 0) {
+                return true
+            } else {
+                return false
+            }
         }
     });
 
@@ -221,98 +222,7 @@ if (Meteor.isClient) {
         }
     });
 
-    Template.settings.helpers({
-        'tournaments': function() {
-            return Settings.findOne({})["tids"];
-        }
-    });
-
     // Event functions----------------------------------------------------------
-    Template.settings.events({
-        // pull tournaments from server
-        'click #reload': function() {
-            Games.find({}).forEach(function (post) {
-                Games.remove({_id: post["_id"]});
-            });
-            Tournaments.find({}).forEach(function (post) {
-                Tournaments.remove({_id: post["_id"]});
-            });
-            Fields.find({}).forEach(function (post) {
-                Fields.remove({_id: post["_id"]});
-            });
-
-            tids = Settings.findOne({})["tids"];
-
-            tids.forEach(function (tid) {
-                // Insert tournaments which are not in the db yet
-                Meteor.call('updateTournament', tid);
-
-                // Insert games rounds
-                Meteor.call("updateGames", tid);
-
-                // Insert fields
-                Meteor.call('updateFields', tid);
-            });
-            AntiModals.alert('Reload finished');
-        },
-        // add new tournament
-        'click #addTournament': function() {
-            var tids = [parseInt($('#addtour').val())];
-
-            tids.forEach(function (tid) {
-                // Insert tournaments which are not in the db yet
-                Meteor.call('updateTournament', tid, function(err,res) {
-                    if (res) {
-                        console.log("Tournaments added");
-                    }
-                });
-
-                // Insert games rounds
-                Meteor.call("updateGames", tid, function(err,res) {
-                    if (res) {
-                        console.log("Games added");
-                    }
-                });
-
-                // Insert fields
-                Meteor.call('updateFields', tid, function(err,res) {
-                    if (res) {
-                        console.log("Fields added");
-                    }
-                });
-            });
-
-            var settings = Settings.findOne({});
-            var tids2 = settings["tids"];
-            tids = tids2.concat(tids);
-
-            Settings.update({_id: settings["_id"]}, {tids: tids});
-
-            AntiModals.alert('Tournament added');
-        },
-        // remove tournament
-        'click #delTournament': function() {
-            var tid = [parseInt($('#deltour').val())];    
-            Games.find({tournament_id: tid}).forEach(function (post) {
-                Games.remove({_id: post["_id"]});
-            });
-            Tournaments.find({id: tid}).forEach(function (post) {
-                Tournaments.remove({_id: post["_id"]});
-            });
-            Fields.find({related_tournaments: tid}).forEach(function (post) {
-                Fields.remove({_id: post["_id"]});
-            });
-            console.log("Tournaments removed");
-            var settings = Settings.findOne({});
-            var tids = settings["tids"];
-            tid_index = tids.indexOf(tid);
-            tids = tids.splice(tid_index,1);
-            Settings.update({_id: settings["_id"]}, {tids: tids});
-
-            AntiModals.alert('Tournament Removed');
-        }
-    });
-
     Template.main.events({
         // set gps location
         'click #gps': function() {
@@ -350,10 +260,10 @@ if (Meteor.isClient) {
 
     // When the user clicks on a menu entry, show/hide
     Template.menuTournament.events( {
-        'click .tournament': function() {
+        'click .tournament': function(event) {
             $(event.target).siblings().slideToggle();
         },
-        'click .field': function() {
+        'click .field': function(event) {
             $(event.target).siblings().slideToggle();
         }
     });
@@ -420,37 +330,46 @@ if (Meteor.isClient) {
         },
         'click #team_1_plus': function () {
             var current_game = this;
-            Games.update({_id: current_game['_id']}, {
-                $inc: {
-                    team_1_score: 1
-                },
-                $push: {
-                    history: {
-                        user: Meteor.userId(), 
-                        type:'team1+'
+            if (current_game["is_final"] == false) {
+                Games.update({_id: current_game['_id']}, {
+                    $inc: {
+                        team_1_score: 1
+                    },
+                    $push: {
+                        history: {
+                            user: Meteor.userId(), 
+                            type:'team1+'
+                        }
                     }
+                }); 
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
                 }
-            }); 
-            Meteor.call('updateScore', current_game["id"]);
+            }
         },
         'click #team_2_plus': function () {
             var current_game = this;
-            Games.update({_id: current_game['_id']}, {
-                $inc: {
-                    team_2_score: 1
-                },
-                $push: {
-                    history: {
-                        user: Meteor.userId(), 
-                        type:'team2+'
+
+            if (current_game["is_final"] == false) {
+                Games.update({_id: current_game['_id']}, {
+                    $inc: {
+                        team_2_score: 1
+                    },
+                    $push: {
+                        history: {
+                            user: Meteor.userId(), 
+                            type:'team2+'
+                        }
                     }
+                });
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
                 }
-            });
-            Meteor.call('updateScore', current_game["id"]);
+            }
         },
         'click #team_1_minus': function () {
             var current_game = this;
-            if (current_game["team_1_score"] != 0) {
+            if (current_game["team_1_score"] != 0 && current_game["is_final"] == false) {
                 Games.update({_id: current_game['_id']}, {
                     $inc: {
                         team_1_score: -1
@@ -462,12 +381,14 @@ if (Meteor.isClient) {
                         }
                     }
                 }); 
-                Meteor.call('updateScore', current_game["id"]);
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
+                }
             };
         },
         'click #team_2_minus': function () {
             var current_game = this;
-            if (current_game["team_2_score"] != 0) {
+            if (current_game["team_2_score"] != 0 && current_game["is_final"] == false) {
                 Games.update({_id: current_game['_id']}, {
                     $inc: {
                         team_2_score: -1
@@ -479,7 +400,9 @@ if (Meteor.isClient) {
                         }
                     }
                 }); 
-                Meteor.call('updateScore', current_game["id"]);
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
+                }
             };
         },
 
@@ -647,14 +570,6 @@ if (Meteor.isClient) {
 }
 
 if(Meteor.isServer) {
-    // easy db reset
-    if(false) {
-        Games.remove({});
-        Tournaments.remove({});
-        Fields.remove({});
-    }
-
-
     // Publishions--------------------------------------------------------------
     // Meteor.publish('tournaments', function() {
     //     return Tournaments.find();
@@ -716,6 +631,14 @@ if(Meteor.isServer) {
                         score_final = false;
                     }
 
+                    var scores = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_scores/?game_id=" + match["id"]);
+                    if (scores.data["meta"] > 0) {
+                        scores_last_updated = scores.data["objects"][0]["time_last_updated"];
+                    } else {
+                        scores_last_updated = match["time_last_updated"];
+                    }
+
+
                     if (Games.find({id: match["id"]}).count() == 0) {
                         current_game = {
                             id: match["id"],
@@ -731,10 +654,43 @@ if(Meteor.isServer) {
                             tournament_id: match["tournament_id"],
                             start_time: Date.parse(match["start_time"]),
                             is_final: score_final,
-                            history: []
+                            history: [],
+                            time_last_updated: match["time_last_updated"],
+                            score_last_updated: scores_last_updated
                         };
                         Games.insert(current_game);
+                    } else if (moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"])) {
+                        current_game = {
+                            id: match["id"],
+                            team_1_id: match["team_1_id"],
+                            team_1_name: match["team_1"]["name"],
+                            team_1_score: match["team_1_score"],
+                            team_2_id: match["team_2_id"],
+                            team_2_name: match["team_2"]["name"],
+                            team_2_score: match["team_2_score"],
+                            game_site_id: match["game_site_id"],
+                            tournament_id: match["tournament_id"],
+                            start_time: Date.parse(match["start_time"]),
+                            is_final: score_final,
+                            time_last_updated: match["time_last_updated"],
+                            score_last_updated: scores_last_updated
+                        };
+                        Games.update({id: match["id"]},{$set: current_game});
+                    } else if (moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated)) {
+                        current_game = {
+                            team_1_id: match["team_1_id"],
+                            team_1_name: match["team_1"]["name"],
+                            team_1_score: match["team_1_score"],
+                            team_2_id: match["team_2_id"],
+                            team_2_name: match["team_2"]["name"],
+                            team_2_score: match["team_2_score"],
+                            start_time: Date.parse(match["start_time"]),
+                            is_final: score_final,
+                            score_last_updated: scores_last_updated
+                        };
+                        Games.update({id: match["id"]},{$set: current_game});
                     }
+
                 });
                 if (results.data["meta"]["next"] === null) {
                     break;
@@ -776,8 +732,38 @@ if(Meteor.isServer) {
                             description: game_site["event_site"]["description"],
                             tournament_id: related_tournaments,
                             games: related_games,
-                            related_field: related_field
+                            related_field: related_field,
+                            time_last_updated: game_site["time_last_updated"]
                         });
+                    } else if (Fields.find({id: cur_id}).count() > 0 && Games.find({game_site_id: cur_id}).count() > 0 && moment(Fields.find({id: cur_id})["time_last_updated"]).isBefore(game_site["time_last_updated"])) {
+                        var related_tournaments = tid;
+
+                        var related_tournaments = [];
+                        Games.find({game_site_id: cur_id}).forEach(function (game) {
+                            related_tournaments.push(game["tournament_id"]);
+                        });
+
+                        var related_games = [];
+                        Games.find({game_site_id: cur_id}).forEach(function (game) {
+                            related_games.push(game["id"]);
+                        });
+
+                        var related_field = null;
+                        var cur_name = game_site["event_site"]["name"] + ", " + game_site["name"];
+                        var field = Fields.findOne({name: cur_name});
+                        if(field) {
+                            related_field = field["id"];
+                        }
+                        Fields.update({id: cur_id},{$set: {
+                            id: cur_id,
+                            name: cur_name,
+                            description: game_site["event_site"]["description"],
+                            tournament_id: related_tournaments,
+                            games: related_games,
+                            related_field: related_field,
+                            time_last_updated: game_site["time_last_updated"]
+                        }});
+
                     }
                 });
                 if (results.data["meta"]["next"] === null) {
@@ -787,17 +773,8 @@ if(Meteor.isServer) {
             }
         },
 
-        getToken: function() {
-            client_id = "04d5dc39a859c5cebd26b36a00568f";
-            client_secret = "54bd6343cd051bb322aed42c19d090";
-
-            var results = Meteor.http.call("GET", "https://www.leaguevine.com/oauth2/token/?client_id=" + client_id +
-                                                    "&client_secret=" + client_secret +
-                                                    "&grant_type=client_credentials&scope=universal");
-            Session.setPersistent("tokens", results["access_token"]);
-        },
-
         updateScore: function(game) {
+            var failure = false
             game = Games.findOne({id: game});
             var requestbody = {
                 'data': {
@@ -819,31 +796,43 @@ if(Meteor.isServer) {
                                             requestbody,
                                             function (error, result) {
                                                 if (result) {
-                                                    // console.log(result);
+                                                    Games.update({id: game["id"]},{$set: {scores_last_updated: result["time_last_updated"]}})
                                                 }
                                                 if (error) {
-                                                    console.log(error);
+                                                    failure = true
                                                 }
                                             }
-          );
+            );
+
+            return failure
         }
     });
 
     // Insert data which has not been inserted yet------------------------------
-    var tids = [20051, 20019, 19752, 19753]; //19751
-    Settings.remove({});
-    Settings.insert({tids: tids});
+    var tids = [20051, 20019, 19752, 19753,20065];
+    Houston.add_collection(Meteor.users);
+    Houston.add_collection(Houston._admins);
 
-    if(false) {
-        tids.forEach(function (tid) {
-            // Insert tournaments which are not in the db yet
-            Meteor.call('updateTournament', tid);
+    SyncedCron.add({
+        name: 'LeaguevineSync',
+            schedule: function(parser) {
+            return parser.text('every 4 minutes');
+        },
+            job: function() {
+                tids = [20065,20051, 20019, 19752, 19753];
+                tids.forEach(function (tid) {
+                    // Insert tournaments which are not in the db yet
+                    Meteor.call('updateTournament', tid);
 
-            // Insert games rounds
-            Meteor.call("updateGames", tid);
+                    // Insert games rounds
+                    Meteor.call("updateGames", tid);
 
-            // Insert fields
-            Meteor.call('updateFields', tid);
-        });
-    }
+                    // Insert fields
+                    Meteor.call('updateFields', tid);
+                });
+            }
+    });
+
+    SyncedCron.start();
+
 }

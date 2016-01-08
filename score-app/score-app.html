@@ -48,11 +48,13 @@
                 {{> loading}}
             {{/if}}
             <li><a href="#" class="logout">Logout</a></li>
+            {{#if admin_status}}
+                <li><a href="/admin">Admin</a></li>
+            {{/if}}
         {{else}}
             <li><a href="{{pathFor route='register'}}">Register</a></li>
             <li><a href="{{pathFor route='login'}}">Login</a></li>
         {{/if}}
-        <li><a href="{{pathFor route='settings'}}">Settings</a></li>
     </ul>
 </template>
 
@@ -138,14 +140,22 @@ location and yours -->
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-5 centerDiv team_1_col" style="background-color: {{team_1_col}}">
-            <h2>{{team_1_name}}</h2>
-        </div>
-        <div class="col-xs-2 centerDiv">
-            <h2>VS</h2>
-        </div>
-        <div class="col-xs-5 centerDiv team_2_col" style="background-color: {{team_2_col}}">
-            <h2>{{team_2_name}}</h2>
+        <div class="row-height">
+            <div class="col-xs-5 centerDiv team_1_col col-height" style="background-color: {{team_1_col}}">
+                <div class="inside inside-full-height">
+                    <h2>{{team_1_name}}</h2>
+                </div>
+            </div>
+            <div class="col-xs-2 centerDiv col-height">
+                <div class="inside inside-full-height">
+                    <h2>VS</h2>
+                </div>
+            </div>
+            <div class="col-xs-5 centerDiv team_2_col col-height" style="background-color: {{team_2_col}}">
+                <div class="inside inside-full-height">
+                    <h2>{{team_2_name}}</h2>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -244,10 +254,12 @@ location and yours -->
     </div>
     <br>
     <!-- update position field -->
-    <button id="setGps">
-        <i class="fa fa-map-marker"></i>
-    </button>
-    Click here to set this fields location to yours!
+    <p>
+        <button id="setGps">
+            <i class="fa fa-map-marker"></i>
+        </button>
+        Click here to set this field's location to yours!
+    </p>
     {{#unless over_time}}
         <button id="isFinal">
             Deactivate Game
@@ -282,19 +294,4 @@ location and yours -->
 <!-- Loading -->
 <template name="loading">
     <i class="fa fa-spinner fa-spin fa-4x"></i>
-</template>
-
-<template name="settings">
-    <div class="centerDiv">
-        <h1>Settings</h1>
-        <h3>Active Tournaments</h3>
-        <p>{{tournaments}}</p>
-        <input id="addtour" type="text">
-        <button id="addTournament">Add Tournament</button>
-        <br>
-        <input id="deltour" type="text">
-        <button id="delTournament">Remove Tournament</button>
-        <br>
-        <button id="reload">Reload Tournaments</button>
-    </div>
 </template>

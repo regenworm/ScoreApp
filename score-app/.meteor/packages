@@ -33,3 +33,7 @@ outatime:geolib
 u2622:persistent-session
 anti:modals
 houston:admin
+lai:collection-extensions
+tmeasday:paginated-subscription
+dburles:mongo-collection-instances
+percolate:synced-cron

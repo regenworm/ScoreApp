@@ -574,111 +574,76 @@ if (Meteor.isClient) {
 }
 
 if(Meteor.isServer) {
-    // Publishions--------------------------------------------------------------
-    // Meteor.publish('tournaments', function() {
-    //     return Tournaments.find();
-    // });
-
-    // Meteor.publish('games', function() {
-    //     return Games.find();
-    // });
-
-    // Meteor.publish('fields', function() {
-    //     return Fields.find();
-    // });
+    Houston.add_collection(Meteor.users);
+    Houston.add_collection(Houston._admins);
 
     // Methodes-----------------------------------------------------------------
-    Meteor.methods( {
+    Meteor.methods({
+        // Checks if there are new tournaments.
         updateTournament: function(tids) {
             this.unblock();
-            tid = "%5B"+tids.toString()+"%5D"
-            tid = tid.replace(/,/g , "%2C");
-            tid = tid.replace(/ /g, "");
-            console.log(tids);
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/?tournament_ids=" + tid );
+
+            // Remove blank spaces and replace comma's and brackets by encoded
+            // characters, so all tids can be retrieved.
+            tid = (("%5B"+tids.toString()+"%5D").replace(/,/g, "%2C")).replace(/ /g, "");
+            var results = Meteor.http.get("https://api.leaguevine.com/v1/tournaments/?tournament_ids=" + tid );
             while (true) {
                 results.data["objects"].forEach(function (tournament_data) {
-                    if (Tournaments.find({id: tournament_data["id"]}).count() == 0) {
+                    var tournament_found = Tournaments.find({id: tournament_data["id"]}).count();
+
+                    if (!tournament_found) {
                         Tournaments.insert({
                             id: tournament_data["id"], name: tournament_data["name"]
                         });
                     }
                 });
 
+                // If there is no next, the update of tournaments is done.
                 if (results.data["meta"]["next"] === null) {
                     break;
                 }
-                results = Meteor.http.call("GET", results.data["meta"]["next"]);
+                // Else get the new page of tournaments.
+                results = Meteor.http.get(results.data["meta"]["next"]);
             } 
         },
 
-
-        // score elke minuut checken op leaguevine
-        // refresh triggeren als iemand op gamepagina zit
-        // aan de id van een object kijken hoe oud het is
+        // Checks if there are new games or that games need to be updated.
         updateGames: function(tid) {
             this.unblock();
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid + "&limit=200");
+            var results = Meteor.http.get("https://api.leaguevine.com/v1/games/?tournament_id=" + tid + "&limit=200");
             while (true) {
-                results.data["objects"].some(function (match) {
+                results.data["objects"].forEach(function (match) {
+                    // We don't want games which don't have both teams defined.
                     if (match["team_1_id"] === null || match["team_2_id"] === null || typeof(match["team_1_id"]) === undefined || typeof(match["team_2_id"]) === undefined) {
                         return false;
                     }
 
-                    var score_final = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_scores/?game_id="+match["id"])["data"]["objects"];
-                    if (score_final.length > 0 ) {
+                    // Get the game score data.
+                    var game_scores = Meteor.http.get("https://api.leaguevine.com/v1/game_scores/?game_id=" + match["id"]);
+
+                    // We want the last update of the game score, else if there
+                    // were no game score updates, we set it to the last update
+                    // of the match.
+                    var scores_last_updated = match["time_last_updated"];
+                    if (game_scores.data["meta"] > 0) {
+                        scores_last_updated = game_scores.data["objects"][0]["time_last_updated"];
+                    }
+
+                    // Default score final is false, unless it is specified in
+                    // the game score data.
+                    var score_final = false;
+                    if (game_scores["data"]["objects"].length > 0 ) {
                         score_final = score_final[0]["is_final"];
-                    } else {
-                        score_final = false;
                     }
 
-                    var scores = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_scores/?game_id=" + match["id"]);
-                    if (scores.data["meta"] > 0) {
-                        scores_last_updated = scores.data["objects"][0]["time_last_updated"];
-                    } else {
-                        scores_last_updated = match["time_last_updated"];
-                    }
+                    var game_found = Games.find({id: match["id"]}).count();
+                    var new_score = moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated)
+                    var new_match_stats = moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"])
 
-
-                    if (Games.find({id: match["id"]}).count() == 0) {
-                        current_game = {
-                            id: match["id"],
-                            team_1_id: match["team_1_id"],
-                            team_1_name: match["team_1"]["name"],
-                            team_1_score: match["team_1_score"],
-                            team_1_col: "#fff",
-                            team_2_id: match["team_2_id"],
-                            team_2_name: match["team_2"]["name"],
-                            team_2_score: match["team_2_score"],
-                            team_2_col: "#fff",
-                            game_site_id: match["game_site_id"],
-                            tournament_id: match["tournament_id"],
-                            start_time: Date.parse(match["start_time"]),
-                            is_final: score_final,
-                            history: [],
-                            time_last_updated: match["time_last_updated"],
-                            score_last_updated: scores_last_updated
-                        };
-                        Games.insert(current_game);
-                    } else if (moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"])) {
-                        current_game = {
-                            id: match["id"],
-                            team_1_id: match["team_1_id"],
-                            team_1_name: match["team_1"]["name"],
-                            team_1_score: match["team_1_score"],
-                            team_2_id: match["team_2_id"],
-                            team_2_name: match["team_2"]["name"],
-                            team_2_score: match["team_2_score"],
-                            game_site_id: match["game_site_id"],
-                            tournament_id: match["tournament_id"],
-                            start_time: Date.parse(match["start_time"]),
-                            is_final: score_final,
-                            time_last_updated: match["time_last_updated"],
-                            score_last_updated: scores_last_updated
-                        };
-                        Games.update({id: match["id"]},{$set: current_game});
-                    } else if (moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated)) {
-                        current_game = {
+                    // If there is a new game or if a game needs to be updated
+                    // or if there is a new score.
+                    if (!game_found || new_match_stats || new_score) {
+                        var current_game = {
                             team_1_id: match["team_1_id"],
                             team_1_name: match["team_1"]["name"],
                             team_1_score: match["team_1_score"],
@@ -689,73 +654,75 @@ if(Meteor.isServer) {
                             is_final: score_final,
                             score_last_updated: scores_last_updated
                         };
-                        Games.update({id: match["id"]},{$set: current_game});
-                    }
 
+                        // Some stats if there is no new score.
+                        if (!new_score) {
+                            current_game["id"] = match["id"]
+                            current_game["game_site_id"] = match["game_site_id"]
+                            current_game["tournament_id"] = match["tournament_id"]
+                            current_game["time_last_updated"] = match["time_last_updated"]
+                        }
+
+                        // If it is a new game, the team colors will be white,
+                        // the history will be an empty array and the game will 
+                        // be inserted, else it will just be updated.
+                        if (!game_found) {
+                            current_game["team_1_col"] = "#fff";
+                            current_game["team_2col"] = "#fff";
+                            current_game["history"] = []
+                            Games.insert(current_game);
+                        } else {
+                            Games.update({id: match["id"]},{$set: current_game});
+                        }
+                    }
                 });
+
+                // If there is no next, the update of games is done.
                 if (results.data["meta"]["next"] === null) {
                     break;
                 }
-                results = Meteor.http.call("GET", results.data["meta"]["next"]);
+                // Else get the new page of games.
+                results = Meteor.http.get(results.data["meta"]["next"]);
             }
         },
 
+        // Checks if there are new fields or that fields need to be updated.
         updateFields: function(tid) {
             this.unblock();
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid + "&limit=200");
-
+            var results = Meteor.http.get("https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid + "&limit=200");
             while (true) {
                 results.data["objects"].forEach(function (game_site) {
                     var cur_id = game_site["id"];
-                    if(Fields.find({id: cur_id}).count() == 0 && Games.find({game_site_id: cur_id}).count() > 0) {
-                        var related_tournaments = tid;
+                    var field_found = Fields.find({id: cur_id}).count();
+                    var games_found_with_game_site = Games.find({game_site_id: cur_id}).count();
+                    var new_field_stats = moment(Fields.find({id: cur_id})["time_last_updated"]).isBefore(game_site["time_last_updated"]);
 
+                    // If there is a game added with a new field or if a field has been updated
+                    if((!field_found && games_found_with_game_site) || (field_found && games_found_with_game_site && new_field_stats)) {
+                        // Keep track of the tournaments which are held on this 
+                        // field and of the games that are also played on this 
+                        // field.
                         var related_tournaments = [];
-                        Games.find({game_site_id: cur_id}).forEach(function (game) {
-                            related_tournaments.push(game["tournament_id"]);
-                        });
-
                         var related_games = [];
                         Games.find({game_site_id: cur_id}).forEach(function (game) {
+                            related_tournaments.push(game["tournament_id"]);
                             related_games.push(game["id"]);
                         });
 
+                        // Create the field name.
+                        // Checks if this field name is already in use. If it 
+                        // is, it will keep track of the id of the first field 
+                        // in the database that has this name (for merging 
+                        // purpose on a field page to list all games from 
+                        // different tournaments that play on this field).
                         var related_field = null;
                         var cur_name = game_site["event_site"]["name"] + ", " + game_site["name"];
                         var field = Fields.findOne({name: cur_name});
                         if(field) {
                             related_field = field["id"];
                         }
-                        Fields.insert({
-                            id: cur_id,
-                            name: cur_name,
-                            location: 0,
-                            description: game_site["event_site"]["description"],
-                            tournament_id: related_tournaments,
-                            games: related_games,
-                            related_field: related_field,
-                            time_last_updated: game_site["time_last_updated"]
-                        });
-                    } else if (Fields.find({id: cur_id}).count() > 0 && Games.find({game_site_id: cur_id}).count() > 0 && moment(Fields.find({id: cur_id})["time_last_updated"]).isBefore(game_site["time_last_updated"])) {
-                        var related_tournaments = tid;
 
-                        var related_tournaments = [];
-                        Games.find({game_site_id: cur_id}).forEach(function (game) {
-                            related_tournaments.push(game["tournament_id"]);
-                        });
-
-                        var related_games = [];
-                        Games.find({game_site_id: cur_id}).forEach(function (game) {
-                            related_games.push(game["id"]);
-                        });
-
-                        var related_field = null;
-                        var cur_name = game_site["event_site"]["name"] + ", " + game_site["name"];
-                        var field = Fields.findOne({name: cur_name});
-                        if(field) {
-                            related_field = field["id"];
-                        }
-                        Fields.update({id: cur_id},{$set: {
+                        var current_field = {
                             id: cur_id,
                             name: cur_name,
                             description: game_site["event_site"]["description"],
@@ -763,19 +730,32 @@ if(Meteor.isServer) {
                             games: related_games,
                             related_field: related_field,
                             time_last_updated: game_site["time_last_updated"]
-                        }});
+                        };
 
+                        // If it is a new field, it will have its location set
+                        // to 0 and inserted in the database. Else it will just
+                        // be updated.
+                        if (!field_found && games_found_with_game_site) {
+                            current_field["location"] = 0
+                            Fields.insert(current_field);
+                        } else {
+                            Fields.update({id: cur_id},{$set: current_field});
+                        }
                     }
                 });
+
+                // If there is no next, the update of fields is done.
                 if (results.data["meta"]["next"] === null) {
                     break;
-                } 
-                results = Meteor.http.call("GET", results.data["meta"]["next"]);
+                }
+                // Else get the new page of fields.
+                results = Meteor.http.get(results.data["meta"]["next"]);
             }
         },
 
+        // Will be called when a user changes the score.
+        // Push the score to LeagueVine.
         updateScore: function(game) {
-            var failure = false
             game = Games.findOne({id: game});
             var requestbody = {
                 'data': {
@@ -793,48 +773,46 @@ if(Meteor.isServer) {
                 }
             };
 
-            var results  = Meteor.http.call("POST", "https://api.leaguevine.com/v1/game_scores/",
-                                            requestbody,
-                                            function (error, result) {
-                                                if (result) {
-                                                    Games.update({id: game["id"]},{$set: {scores_last_updated: result["time_last_updated"]}})
-                                                }
-                                                if (error) {
-                                                    failure = true
-                                                }
-                                            }
+            var results  = Meteor.http.post("https://api.leaguevine.com/v1/game_scores/",
+                requestbody,
+                function (error, result) {
+                    if (result) {
+                        // Set the game time last updated to what LeagueVine 
+                        // has (for sync purposes).
+                        Games.update({id: game["id"]},{$set: {scores_last_updated: result["time_last_updated"]}})
+                    }
+                    if (error) {
+                        return true
+                    }
+                }
             );
 
-            return failure
+            return false
         }
     });
 
-    // Insert data which has not been inserted yet------------------------------
-    var tids = [20051, 20019, 19752, 19753,20065];
-    Houston.add_collection(Meteor.users);
-    Houston.add_collection(Houston._admins);
-
+    // Sync database with LeagueVine--------------------------------------------
     SyncedCron.add({
         name: 'LeaguevineSync',
+            // We sync every 10 minutes
             schedule: function(parser) {
-            return parser.text('every 10 minutes');
-        },
+                return parser.text('every 10 minutes');
+            },
             job: function() {
-                tids = [20065,20051, 20019, 19752, 19753];
-                // Insert tournaments which are not in the db yet
+                // The tids of the tournaments we want in the database.
+                var tids = [20065,20051, 20019, 19752, 19753];
+                // Insert tournaments
                 Meteor.call('updateTournament', tids);
-
                 tids.forEach(function (tid) {
-
-                    // Insert games rounds
+                    // Insert or update games rounds.
                     Meteor.call("updateGames", tid);
 
-                    // Insert fields
+                    // Insert or update fields.
                     Meteor.call('updateFields', tid);
                 });
             }
     });
 
-    // SyncedCron.start();
+    SyncedCron.start();
 
 }

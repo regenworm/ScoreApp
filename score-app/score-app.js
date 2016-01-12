@@ -146,14 +146,6 @@ if (Meteor.isClient) {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
         },
         'init_page': function() {
-            var col1 = this["team_1_col"];
-            var col2 = this["team_2_col"];
-            if (col1) {
-                $('#colorpicker1').val(col1);
-            }
-            if (col2) {
-                $('#colorpicker2').val(col2);
-            }
             if (this["is_final"]) {
                 $("div.overlay_score").css({"display": "block"});
             } else {
@@ -178,6 +170,26 @@ if (Meteor.isClient) {
             if(moment().diff(moment(this["start_time"]), "weeks", true) > 2) {
                 return true;   
             }
+        }
+    });
+
+    Template.viscue.helpers({
+        // Set colourpicker value on load
+        'init_page': function() {
+            var col1 = current_game["team_1_col"];
+            var col2 = current_game["team_2_col"];
+            if (col1) {
+                $('#colorpicker1').val(col1);
+            }
+            if (col2) {
+                $('#colorpicker2').val(col2);
+            }
+        },
+        'team_1_name': function() {
+            return current_game["team_1_name"];
+        },
+        'team_2_name': function() {
+            return current_game["team_2_name"];
         }
     });
 
@@ -407,55 +419,14 @@ if (Meteor.isClient) {
         },
 
         // update teamcolors for all games that are after
-        'click #team_1_col': function() {
-            console.log("laksjd");
-            AntiModals.overlay("viscue")
-        },
-        // the current game
-        'change #colorpicker1': function () {
+        'click #viscue_team_1': function() {
             current_game = this;
-            color = $('#colorpicker1').val();
-            Games.find({team_1_id: this["team_1_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_1_col: color
-                        }
-                    })
-                }            
-            });
-            Games.find({team_2_id: this["team_1_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_2_col: color
-                        }
-                    })
-                }           
-            });
+            AntiModals.overlay("viscue", current_game);
         },
-        'change #colorpicker2': function () {
+        // update teamcolors for all games that are after
+        'click #viscue_team_2': function() {
             current_game = this;
-            color = $('#colorpicker2').val();
-            Games.find({team_1_id: this["team_2_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_1_col: color
-                        }
-                    })
-                }             
-            });
-            
-            Games.find({team_2_id: this["team_2_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_2_col: color
-                        }
-                    })
-                }             
-            });
+            AntiModals.overlay("viscue", current_game);
         },
         'click #isFinal': function () {
             event.preventDefault();
@@ -465,6 +436,58 @@ if (Meteor.isClient) {
                 }
             }); 
             $("div.overlay").fadeToggle("fast");
+        }
+    });
+
+    Template.viscue.events({
+        // the current game is passed from the click event
+        'change #colorpicker1': function () {
+            color = $('#colorpicker1').val();
+            Games.find({team_1_id: current_game["team_1_id"]}).forEach(function (post) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_1_col: color
+                        }
+                    })
+                }            
+            });
+            Games.find({team_2_id: current_game["team_1_id"]}).forEach(function (post) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_2_col: color
+                        }
+                    })
+                }           
+            });
+            AntiModals.dismissOverlay($('.anti-modal-overlay'));
+        },
+        'change #colorpicker2': function () {
+            color = $('#colorpicker2').val();
+            Games.find({team_1_id: current_game["team_2_id"]}).forEach(function (post) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_1_col: color
+                        }
+                    })
+                }             
+            });
+            
+            Games.find({team_2_id: current_game["team_2_id"]}).forEach(function (post) {
+                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
+                    Games.update({_id: post._id}, {
+                        $set: {
+                            team_2_col: color
+                        }
+                    })
+                }             
+            });
+            AntiModals.dismissOverlay($('.anti-modal-overlay'));
+        },
+        'click #exit': function () {
+            AntiModals.dismissOverlay($('.anti-modal-overlay'));
         }
     });
 

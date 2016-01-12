@@ -407,6 +407,10 @@ if (Meteor.isClient) {
         },
 
         // update teamcolors for all games that are after
+        'click #team_1_col': function() {
+            console.log("laksjd");
+            AntiModals.overlay("viscue")
+        },
         // the current game
         'change #colorpicker1': function () {
             current_game = this;
@@ -585,39 +589,36 @@ if(Meteor.isServer) {
 
     // Methodes-----------------------------------------------------------------
     Meteor.methods( {
-        updateTournament: function(tid) {
+        updateTournament: function(tids) {
             this.unblock();
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/" + tid + "/");
-            if (Tournaments.find({id: results.data["id"]}).count() == 0) {
-                Tournaments.insert({
-                    id: results.data["id"], name: results.data["name"]
+            tid = "%5B"+tids.toString()+"%5D"
+            tid = tid.replace(/,/g , "%2C");
+            tid = tid.replace(/ /g, "");
+            console.log(tids);
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournaments/?tournament_ids=" + tid );
+            while (true) {
+                results.data["objects"].forEach(function (tournament_data) {
+                    if (Tournaments.find({id: tournament_data["id"]}).count() == 0) {
+                        Tournaments.insert({
+                            id: tournament_data["id"], name: tournament_data["name"]
+                        });
+                    }
                 });
-            }
+
+                if (results.data["meta"]["next"] === null) {
+                    break;
+                }
+                results = Meteor.http.call("GET", results.data["meta"]["next"]);
+            } 
         },
 
-        updateTeams: function(tid) {
-            this.unblock();
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/tournament_teams/?tournament_ids=%5B" + tid + "%5D");
-            results.data["objects"].forEach(function (team) {
-                if (Games.find({id: team["id"]}).count() == 0) {
-                    Games.insert( {
-                        id: team["id"],
-                        name: team["team"]["name"],
-                        team_2_id: match["team_2_id"],
-                        game_site_id: match["game_site_id"],
-                        tournament_id: match["tournament_id"],
-                        start: match["start_time"]
-                    });
-                }
-            });
-        },
 
         // score elke minuut checken op leaguevine
         // refresh triggeren als iemand op gamepagina zit
         // aan de id van een object kijken hoe oud het is
         updateGames: function(tid) {
             this.unblock();
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid);
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/games/?tournament_id=" + tid + "&limit=200");
             while (true) {
                 results.data["objects"].some(function (match) {
                     if (match["team_1_id"] === null || match["team_2_id"] === null || typeof(match["team_1_id"]) === undefined || typeof(match["team_2_id"]) === undefined) {
@@ -701,7 +702,7 @@ if(Meteor.isServer) {
 
         updateFields: function(tid) {
             this.unblock();
-            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid);
+            var results = Meteor.http.call("GET", "https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid + "&limit=200");
 
             while (true) {
                 results.data["objects"].forEach(function (game_site) {
@@ -816,13 +817,14 @@ if(Meteor.isServer) {
     SyncedCron.add({
         name: 'LeaguevineSync',
             schedule: function(parser) {
-            return parser.text('every 4 minutes');
+            return parser.text('every 10 minutes');
         },
             job: function() {
                 tids = [20065,20051, 20019, 19752, 19753];
+                // Insert tournaments which are not in the db yet
+                Meteor.call('updateTournament', tids);
+
                 tids.forEach(function (tid) {
-                    // Insert tournaments which are not in the db yet
-                    Meteor.call('updateTournament', tid);
 
                     // Insert games rounds
                     Meteor.call("updateGames", tid);
@@ -833,6 +835,6 @@ if(Meteor.isServer) {
             }
     });
 
-    SyncedCron.start();
+    // SyncedCron.start();
 
 }

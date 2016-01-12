@@ -635,7 +635,7 @@ if(Meteor.isServer) {
             this.unblock();
             var results = Meteor.http.get("https://api.leaguevine.com/v1/games/?tournament_id=" + tid + "&limit=200");
             while (true) {
-                results.data["objects"].forEach(function (match) {
+                results["data"]["objects"].forEach(function (match) {
                     // We don't want games which don't have both teams defined.
                     if (match["team_1_id"] === null || match["team_2_id"] === null || typeof(match["team_1_id"]) === undefined || typeof(match["team_2_id"]) === undefined) {
                         return false;
@@ -648,15 +648,15 @@ if(Meteor.isServer) {
                     // were no game score updates, we set it to the last update
                     // of the match.
                     var scores_last_updated = match["time_last_updated"];
-                    if (game_scores.data["meta"] > 0) {
-                        scores_last_updated = game_scores.data["objects"][0]["time_last_updated"];
+                    if (game_scores["data"]["meta"] > 0) {
+                        scores_last_updated = game_scores["data"]["objects"][0]["time_last_updated"];
                     }
 
                     // Default score final is false, unless it is specified in
                     // the game score data.
                     var score_final = false;
                     if (game_scores["data"]["objects"].length > 0 ) {
-                        score_final = score_final[0]["is_final"];
+                        score_final = game_scores["data"]["objects"][0]["is_final"];
                     }
 
                     var game_found = Games.find({id: match["id"]}).count();
@@ -701,11 +701,11 @@ if(Meteor.isServer) {
                 });
 
                 // If there is no next, the update of games is done.
-                if (results.data["meta"]["next"] === null) {
+                if (results["data"]["meta"]["next"] === null) {
                     break;
                 }
                 // Else get the new page of games.
-                results = Meteor.http.get(results.data["meta"]["next"]);
+                results = Meteor.http.get(results["data"]["meta"]["next"]);
             }
         },
 
@@ -714,7 +714,7 @@ if(Meteor.isServer) {
             this.unblock();
             var results = Meteor.http.get("https://api.leaguevine.com/v1/game_sites/?tournament_id=" + tid + "&limit=200");
             while (true) {
-                results.data["objects"].forEach(function (game_site) {
+                results["data"]["objects"].forEach(function (game_site) {
                     var cur_id = game_site["id"];
                     var field_found = Fields.find({id: cur_id}).count();
                     var games_found_with_game_site = Games.find({game_site_id: cur_id}).count();
@@ -768,11 +768,11 @@ if(Meteor.isServer) {
                 });
 
                 // If there is no next, the update of fields is done.
-                if (results.data["meta"]["next"] === null) {
+                if (results["data"]["meta"]["next"] === null) {
                     break;
                 }
                 // Else get the new page of fields.
-                results = Meteor.http.get(results.data["meta"]["next"]);
+                results = Meteor.http.get(results["data"]["meta"]["next"]);
             }
         },
 

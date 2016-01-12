@@ -18,7 +18,7 @@ html, body {
 }
 
 .wrapper {
-  min-height: 100%;
+  min-height: 90%;
   /*margin: 0 auto -155px;  the bottom margin is the negative value of the footer's height */
 }
 
@@ -47,15 +47,14 @@ html, body {
 }
 
 .push {
-  height: 10%;
+  height: auto;
 }
 #footer {
-    position: absolute;
     right: 0;
     bottom: 0;
     left: 0;
     text-align: center;
-    height: 10%;
+    height: auto;
 }
 #slideout-menu {
     background: #DF314D;

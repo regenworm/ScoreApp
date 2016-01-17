@@ -236,33 +236,34 @@ if (Meteor.isClient) {
 
     // Event functions----------------------------------------------------------
     Template.main.events({
-        // set gps location
+        // Set your gps location.
         'click #gps': function() {
             Location.locate(function(pos){
                 Session.setAuth("cur_pos", pos);
-            },  function(err){
+            }, function(err){
                 console.log("Oops! There was an error", err);
             });
         },
     });
 
-    Template.fieldView.events({
+    Template.fieldView.events( {
+        // When a user clicks on a field entry in the field overview table.
         'click .reactive-table tbody tr': function(event) {
             var field = this;
             Router.go('field_games', this);
         }
     });
 
-    // Sidebar toggle
     var slideout;
     Template.main.events({
+        // Sidebar toggle.
         'click #toggle': function (e) {
             slideout.toggle();
         }
     });
 
-    // When a user logs out
     Template.menuItems.events( {
+        // When a user logs out.
         'click .logout': function(event) {
             event.preventDefault();
             Meteor.logout();
@@ -270,7 +271,7 @@ if (Meteor.isClient) {
         }
     });
 
-    // When the user clicks on a menu entry, show/hide
+    // When the user clicks on a menu entry, show/hide.
     Template.menuTournament.events( {
         'click .tournament': function(event) {
             $(event.target).siblings().slideToggle();
@@ -281,14 +282,20 @@ if (Meteor.isClient) {
     });
 
     Template.gameView.events({
+        // If the next game button has been pressed, check if there is a 
+        // next game and if there is go to the game page, else warning.
         'click #nextGame': function() {
             var current_game = this;
+            // Get the array of related games from this field.
             var related_games = Fields.findOne({id: current_game["game_site_id"]})["games"];
 
+            // Find on other fields.
             Fields.find({related_field: current_game.id}).forEach( function(field) {
                 related_games = related_games.concat(field["games"]);
             });
+
             temp = []
+            // Find for all related games and sort them on start time.
             Games.find({id: {$in: related_games}}, {sort: {'start_time': 1}}).forEach(function (game) {
                 temp.push(game["id"])
             });
@@ -296,6 +303,9 @@ if (Meteor.isClient) {
             related_games = temp;
             game_index = related_games.indexOf(current_game["id"]);
 
+
+            // Check if you are the last game, if not make a new path with the
+            // game index of next game.
             if (game_index+1 < related_games.length) {
                 game_index = related_games[game_index+1]
                 path = '/game/'+game_index + '/';
@@ -304,14 +314,21 @@ if (Meteor.isClient) {
                 AntiModals.alert("This is the last game on this field.");
             }
         },
+
+        // If the previous game button has been pressed, check if there is a 
+        // previous game and if there is go to the game page, else warning.
         'click #prevGame': function() {
             var current_game = this;
+            // Get the array of related games from this field.
             var related_games = Fields.findOne({id: current_game["game_site_id"]})["games"];
 
+            // Find on other fields.
             Fields.find({related_field: current_game.id}).forEach( function(field) {
                 related_games = related_games.concat(field["games"]);
             });
+
             temp = []
+            // Find for all related games and sort them on start time.
             Games.find({id: {$in: related_games}}, {sort: {'start_time': 1}}).forEach(function (game) {
                 temp.push(game["id"])
             });
@@ -319,6 +336,8 @@ if (Meteor.isClient) {
             related_games = temp;
             game_index = related_games.indexOf(this["id"]);
 
+            // Check if you are the first game, if not make a new path with the
+            // game index of previous game.
             if (game_index > 0) {
                 game_index = related_games[game_index-1]
                 path = '/game/'+game_index + '/';
@@ -328,171 +347,239 @@ if (Meteor.isClient) {
             }
         },
 
-        // set field gps to current location
+        // If the set gps button has been pressed, set this field's location to
+        // the user's location.
         'click #setGps': function() {
-            if (Session.get("cur_pos")) {
+            var pos = Session.get("cur_pos");
+            // If the user has given his location.
+            if (pos) {
                 var current_game = this;
-                var pos = Session.get("cur_pos");
                 var current_field = Fields.findOne({id: current_game["game_site_id"]});
-                Fields.update({_id: current_field["_id"]}, {$set: {location: pos}});
-            }
-            else {
+                Fields.update(
+                    {_id: current_field["_id"]}, 
+                    {$set: 
+                        {location: pos}
+                    }
+                );
+            } else {
                 AntiModals.alert("Please set your gps location first by clicking the gps button next to the menu button!")
             }
         },
-        'click #team_1_plus': function () {
+
+        // If the team 1 plus button has been pressed, update the score and add
+        // a new history entry.
+        'click #team1Plus': function () {
             var current_game = this;
+            // The score may be changed if the game is not final.
             if (current_game["is_final"] == false) {
-                Games.update({_id: current_game['_id']}, {
-                    $inc: {
-                        team_1_score: 1
-                    },
-                    $push: {
-                        history: {
-                            user: Meteor.userId(), 
-                            type:'team1+'
+                 Games.update(
+                    {_id: current_game['_id']},
+                    {$inc:
+                        {team_1_score: 1},
+                        $push: {
+                            history: {
+                                user: Meteor.userId(), 
+                                type:'team1+'
+                            }
                         }
                     }
-                }); 
+                );
+
+                // If there is an error while updating the updateScore method 
+                // will return true and there will be a warning.
                 if (Meteor.call('updateScore', current_game["id"])) {
                     AntiModals.alert("An error occured, please try again.");
                 }
             }
         },
-        'click #team_2_plus': function () {
-            var current_game = this;
 
+        // If the team 2 plus button has been pressed, update the score and add
+        // a new history entry.
+        'click #team2Plus': function () {
+            var current_game = this;
+            // The score may be changed if the game is not final.
             if (current_game["is_final"] == false) {
-                Games.update({_id: current_game['_id']}, {
-                    $inc: {
-                        team_2_score: 1
-                    },
-                    $push: {
-                        history: {
-                            user: Meteor.userId(), 
-                            type:'team2+'
+                Games.update(
+                    {_id: current_game['_id']},
+                    {$inc:
+                        {team_2_score: 1},
+                        $push: {
+                            history: {
+                                user: Meteor.userId(), 
+                                type:'team2+'
+                            }
                         }
                     }
-                });
+                );
+
+                // If there is an error while updating the updateScore method 
+                // will return true and there will be a warning.     
                 if (Meteor.call('updateScore', current_game["id"])) {
                     AntiModals.alert("An error occured, please try again.");
                 }
             }
         },
-        'click #team_1_minus': function () {
+
+        // If the team 1 minus button has been pressed, update the score and add
+        // a new history entry.
+        'click #team1Minus': function () {
             var current_game = this;
-            if (current_game["team_1_score"] != 0 && current_game["is_final"] == false) {
-                Games.update({_id: current_game['_id']}, {
-                    $inc: {
-                        team_1_score: -1
-                    },
-                    $push: {
-                        history: {
-                            user: Meteor.userId(), 
-                            type:'team1-'
+            // The score may not go negative and the score can only be changed
+            // if the game is not final.
+            if (current_game["team_1_score"] != 0 && 
+                current_game["is_final"] == false) {
+                Games.update(
+                    {_id: current_game['_id']},
+                    {$inc: 
+                        {team_1_score: -1},
+                        $push: {
+                            history: {
+                                user: Meteor.userId(), 
+                                type:'team1-'
+                            }
                         }
                     }
-                }); 
-                if (Meteor.call('updateScore', current_game["id"])) {
-                    AntiModals.alert("An error occured, please try again.");
-                }
-            };
-        },
-        'click #team_2_minus': function () {
-            var current_game = this;
-            if (current_game["team_2_score"] != 0 && current_game["is_final"] == false) {
-                Games.update({_id: current_game['_id']}, {
-                    $inc: {
-                        team_2_score: -1
-                    },
-                    $push: {
-                        history: {
-                            user: Meteor.userId(), 
-                            type:'team2-'
-                        }
-                    }
-                }); 
+                );
+
+                // If there is an error while updating the updateScore method 
+                // will return true and there will be a warning.               
                 if (Meteor.call('updateScore', current_game["id"])) {
                     AntiModals.alert("An error occured, please try again.");
                 }
             };
         },
 
-        // update teamcolors for all games that are after
-        'click #viscue_team_1': function() {
+        // If the team 2 minus button has been pressed, update the score and add
+        // a new history entry.
+        'click #team2Minus': function () {
+            var current_game = this;
+            // The score may not go negative and the score can only be changed
+            // if the game is not final.
+            if (current_game["team_2_score"] != 0 && 
+                current_game["is_final"] == false) {
+                Games.update(
+                    {_id: current_game['_id']},
+                    {$inc: 
+                        {team_2_score: -1},
+                        $push: {
+                            history: {
+                                user: Meteor.userId(), 
+                                type:'team2-'
+                            }
+                        }
+                    }
+                );
+
+                // If there is an error while updating the updateScore method 
+                // will return true and there will be a warning.    
+                if (Meteor.call('updateScore', current_game["id"])) {
+                    AntiModals.alert("An error occured, please try again.");
+                }
+            };
+        },
+
+        // When the visual cue of team 1 is pressed, open the colorpicker 
+        // overlay.
+        'click #viscueTeam1': function() {
             current_game = this;
             AntiModals.overlay("viscue", current_game);
         },
-        // update teamcolors for all games that are after
-        'click #viscue_team_2': function() {
+
+        // When the visual cue of team 2 is pressed, open the colorpicker 
+        // overlay.
+        'click #viscueTeam2': function() {
             current_game = this;
             AntiModals.overlay("viscue", current_game);
         },
+
+        // When the final button has been pressed, change the final boolean and
+        // toggle the overlay.
         'click #isFinal': function () {
             event.preventDefault();
-            Games.update({_id: this['_id']}, {
-                $set: {
-                    is_final: !this["is_final"]
+            Games.update(
+                {_id: this['_id']},
+                {$set: 
+                    {is_final: !this["is_final"]}
                 }
-            }); 
+            ); 
             $("div.overlay").fadeToggle("fast");
         }
     });
 
+    // Colorpicker overlay for teams.
     Template.viscue.events({
-        // the current game is passed from the click event
+        // The current game is passed from the click event.
+
+        // When team 1's colorpicker changes, find all games where it plays and
+        // change the color if it the same or later start time.
         'change #colorpicker1': function () {
             color = $('#colorpicker1').val();
-            Games.find({team_1_id: current_game["team_1_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_1_col: color
+            // Find all games where team 1 plays as team 1.
+            Games.find({team_1_id: current_game["team_1_id"]}).forEach(function (other_game) {
+                if (moment(current_game.start_time).isAfter(other_game.start_time) || 
+                    current_game._id == other_game._id) {
+                    Games.update(
+                        {_id: other_game._id},
+                        {$set: 
+                            {team_1_col: color}
                         }
-                    })
+                    );
                 }            
             });
-            Games.find({team_2_id: current_game["team_1_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_2_col: color
+            // Find all games where team 1 plays as team 2.
+            Games.find({team_2_id: current_game["team_1_id"]}).forEach(function (other_game) {
+                if (moment(current_game.start_time).isAfter(other_game.start_time) || 
+                    current_game._id == other_game._id) {
+                    Games.update(
+                        {_id: other_game._id},
+                        {$set: 
+                            {team_2_col: color}
                         }
-                    })
+                    );
                 }           
             });
             AntiModals.dismissOverlay($('.anti-modal-overlay'));
         },
+
+        // When team 2's colorpicker changes, find all games where it plays and
+        // change the color if it the same or later start time.
         'change #colorpicker2': function () {
             color = $('#colorpicker2').val();
-            Games.find({team_1_id: current_game["team_2_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_1_col: color
+            // Find all games where team 2 plays as team 1.
+            Games.find({team_1_id: current_game["team_2_id"]}).forEach(function (other_game) {
+                if (moment(current_game.start_time).isAfter(other_game.start_time) || 
+                    current_game._id == other_game._id) {
+
+                    Games.update(
+                        {_id: other_game._id},
+                        {$set:
+                            {team_1_col: color}
                         }
-                    })
+                    );
                 }             
             });
-            
-            Games.find({team_2_id: current_game["team_2_id"]}).forEach(function (post) {
-                if (moment(current_game.start_time).isAfter(post.start_time) || current_game._id == post._id) {
-                    Games.update({_id: post._id}, {
-                        $set: {
-                            team_2_col: color
+            // Find all games where team 2 plays as team 2.
+            Games.find({team_2_id: current_game["team_2_id"]}).forEach(function (other_game) {
+                if (moment(current_game.start_time).isAfter(other_game.start_time) || 
+                    current_game._id == other_game._id) {
+                    Games.update(
+                        {_id: other_game._id},
+                        {$set:
+                            {team_2_col: color}
                         }
-                    })
+                    );
                 }             
             });
             AntiModals.dismissOverlay($('.anti-modal-overlay'));
         },
+        // When the exit button has been pressed, close the overlay
         'click #exit': function () {
             AntiModals.dismissOverlay($('.anti-modal-overlay'));
         }
     });
 
     // onRendered functions-----------------------------------------------------
-    // Sidebar instance initialisation
+    // Sidebar instance initialisation.
     Template.main.onRendered(function () {
         var template = this;
         slideout = new Slideout({
@@ -505,38 +592,38 @@ if (Meteor.isClient) {
 
 
     // Login, register and logout-----------------------------------------------
-    // Default messages for errors for login and register
+    // Default messages for errors for login and register.
     $.validator.setDefaults( {
-            rules: {
-                email: {
-                    required: true,
-                    email: true
-                },
-                password: {
-                    required: true,
-                    minlength: 6
-                }
+        rules: {
+            email: {
+                required: true,
+                email: true
             },
-            messages: {
-                email: {
-                    required: "You must enter an email address.",
-                    email: "You've entered an invalid email address."
-                },
-                password: {
-                    required: "You must enter a password.",
-                    minlength: "You password must be at least {0} characters.",
-                    password: "You've entered an invalid password."
-                }
+            password: {
+                required: true,
+                minlength: 6
             }
+        },
+        messages: {
+            email: {
+                required: "You must enter an email address.",
+                email: "You've entered an invalid email address."
+            },
+            password: {
+                required: "You must enter a password.",
+                minlength: "You password must be at least {0} characters.",
+                password: "You've entered an invalid password."
+            }
+        }
     });
 
-    // Login prevent
+    // Login form submit button prevent.
     Template.loginPage.events( {
         'submit form': function(event) {
             event.preventDefault();
         }
     });
-    // Validate login
+    // Validate login.
     Template.loginPage.onRendered(function() {
         var validator = $('.login').validate( {
             submitHandler: function(event) {
@@ -563,13 +650,13 @@ if (Meteor.isClient) {
         });
     });
 
-    // Register prevent
+    // Register form submit button prevent.
     Template.registerPage.events( {
         'submit form': function() {
             event.preventDefault();
         }
     });
-    // Validate register
+    // Validate register.
     Template.registerPage.onRendered(function() {
         var validator = $('.register').validate( {
             submitHandler: function(event) {
@@ -580,7 +667,6 @@ if (Meteor.isClient) {
                     password: password
                 }, function(error) {
                     if (error) {
-                        console.log(error.reason);
                         if (error.reason == "Email already exists.") {
                             validator.showErrors( {
                                 email: "That email already belongs to a registered user."
@@ -600,7 +686,7 @@ if(Meteor.isServer) {
     Houston.add_collection(Meteor.users);
     Houston.add_collection(Houston._admins);
 
-    // Methodes-----------------------------------------------------------------
+    // Methods------------------------------------------------------------------
     Meteor.methods({
         // Checks if there are new tournaments.
         updateTournament: function(tids) {
@@ -639,7 +725,10 @@ if(Meteor.isServer) {
             while (true) {
                 results["data"]["objects"].forEach(function (match) {
                     // We don't want games which don't have both teams defined.
-                    if (match["team_1_id"] === null || match["team_2_id"] === null || typeof(match["team_1_id"]) === undefined || typeof(match["team_2_id"]) === undefined) {
+                    if (match["team_1_id"] === null || 
+                        match["team_2_id"] === null || 
+                        typeof(match["team_1_id"]) === undefined || 
+                        typeof(match["team_2_id"]) === undefined) {
                         return false;
                     }
 
@@ -697,7 +786,10 @@ if(Meteor.isServer) {
                             current_game["history"] = []
                             Games.insert(current_game);
                         } else {
-                            Games.update({id: match["id"]},{$set: current_game});
+                            Games.update(
+                                {id: match["id"]},
+                                {$set: current_game}
+                            );
                         }
                     }
                 });
@@ -723,7 +815,9 @@ if(Meteor.isServer) {
                     var new_field_stats = moment(Fields.find({id: cur_id})["time_last_updated"]).isBefore(game_site["time_last_updated"]);
 
                     // If there is a game added with a new field or if a field has been updated
-                    if((!field_found && games_found_with_game_site) || (field_found && games_found_with_game_site && new_field_stats)) {
+                    if((!field_found && games_found_with_game_site) || 
+                        (field_found && games_found_with_game_site && new_field_stats)) {
+
                         // Keep track of the tournaments which are held on this 
                         // field and of the games that are also played on this 
                         // field.
@@ -764,7 +858,10 @@ if(Meteor.isServer) {
                             current_field["location"] = 0
                             Fields.insert(current_field);
                         } else {
-                            Fields.update({id: cur_id},{$set: current_field});
+                            Fields.update(
+                                {id: cur_id},
+                                {$set: current_field}
+                            );
                         }
                     }
                 });
@@ -798,20 +895,23 @@ if(Meteor.isServer) {
                 }
             };
 
-            var results  = Meteor.http.post("https://api.leaguevine.com/v1/game_scores/",
+            var results = Meteor.http.post(
+                "https://api.leaguevine.com/v1/game_scores/",
                 requestbody,
                 function (error, result) {
                     if (result) {
                         // Set the game time last updated to what LeagueVine 
                         // has (for sync purposes).
-                        Games.update({id: game["id"]},{$set: {scores_last_updated: result["time_last_updated"]}})
+                        Games.update(
+                            {id: game["id"]},
+                            {$set: {scores_last_updated: result["time_last_updated"]}
+                        })
                     }
                     if (error) {
                         return true
                     }
                 }
             );
-
             return false
         }
     });
@@ -819,30 +919,30 @@ if(Meteor.isServer) {
     // Sync database with LeagueVine--------------------------------------------
     SyncedCron.add({
         name: 'LeaguevineSync',
-            // We sync every 10 minutes
-            schedule: function(parser) {
-                return parser.text('every 2 minutes');
-            },
-            job: function() {
-                // The tids of the tournaments we want in the database.
-                var tids = [20065,20051, 20019, 19752, 19753];
-                // Insert tournaments
-                Meteor.call('updateTournament', tids);
-                tids.forEach(function (tid) {
-                    // Check if the sync boolean is true, before syncing, else
-                    // skip that tournament
-                    var tournament = Tournaments.findOne({id: tid});
-                    if (tournament && !tournament["sync"]) {
-                        return;
-                    } else {
-                        // Insert or update games rounds.
-                        Meteor.call("updateGames", tid);
+        // We sync every 10 minutes.
+        schedule: function(parser) {
+            return parser.text('every 2 minutes');
+        },
+        job: function() {
+            // The tids of the tournaments we want in the database.
+            var tids = [20065,20051, 20019, 19752, 19753];
+            // Insert tournaments
+            Meteor.call('updateTournament', tids);
+            tids.forEach(function (tid) {
+                // Check if the sync boolean is true, before syncing, else
+                // skip that tournament.
+                var tournament = Tournaments.findOne({id: tid});
+                if (tournament && !tournament["sync"]) {
+                    return;
+                } else {
+                    // Insert or update games rounds.
+                    Meteor.call("updateGames", tid);
 
-                        // Insert or update fields.
-                        Meteor.call('updateFields', tid);
-                    }
-                });
-            }
+                    // Insert or update fields.
+                    Meteor.call('updateFields', tid);
+                }
+            });
+        }
     });
 
     SyncedCron.start();

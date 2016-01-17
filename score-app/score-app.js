@@ -616,7 +616,9 @@ if(Meteor.isServer) {
 
                     if (!tournament_found) {
                         Tournaments.insert({
-                            id: tournament_data["id"], name: tournament_data["name"]
+                            id: tournament_data["id"], 
+                            name: tournament_data["name"],
+                            sync: true
                         });
                     }
                 });
@@ -819,7 +821,7 @@ if(Meteor.isServer) {
         name: 'LeaguevineSync',
             // We sync every 10 minutes
             schedule: function(parser) {
-                return parser.text('every 10 minutes');
+                return parser.text('every 2 minutes');
             },
             job: function() {
                 // The tids of the tournaments we want in the database.
@@ -827,15 +829,21 @@ if(Meteor.isServer) {
                 // Insert tournaments
                 Meteor.call('updateTournament', tids);
                 tids.forEach(function (tid) {
-                    // Insert or update games rounds.
-                    Meteor.call("updateGames", tid);
+                    // Check if the sync boolean is true, before syncing, else
+                    // skip that tournament
+                    var tournament = Tournaments.findOne({id: tid});
+                    if (tournament && !tournament["sync"]) {
+                        return;
+                    } else {
+                        // Insert or update games rounds.
+                        Meteor.call("updateGames", tid);
 
-                    // Insert or update fields.
-                    Meteor.call('updateFields', tid);
+                        // Insert or update fields.
+                        Meteor.call('updateFields', tid);
+                    }
                 });
             }
     });
 
     SyncedCron.start();
-
 }

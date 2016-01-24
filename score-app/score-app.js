@@ -1,6 +1,163 @@
+// Score App javascript code
+//  -Routes
+//  -Client-side-code
+//      -------------------------------
+//      --------Helper functions-------
+//      -------------------------------
+//      -menuItems.helpers
+//          'tournament'
+//          *(find all tournaments)
+//
+//          'admin_status'
+//          *(check admin)
+//      -menuTournament.helpers
+//          'field'
+//          *(find all fields from a tournament)
+//      -menuField.helpers
+//          'game'
+//          *(find all games from a field)
+//      -field_games.helpers
+//          'game'
+//          *(return the games of a field)
+//
+//          'parsed_time'
+//          *(parse start time of a game)
+// 
+//          'tournament_id'
+//          *(get tournament id)
+//      -gameView.helpers
+//          'parsed_time'
+//          *(parse start time of a game)
+//
+//          'init_page'
+//          *(if score final, show overlay that blocks buttons)         
+//
+//          'tournament_name'
+//          *(get tournament name)
+//
+//          'field_name'
+//          *(get field name)
+//
+//          'over_time'
+//          *(check if game was more than two weeks ago)
+//      -viscue.helpers
+//          'init_page'
+//          *(check colour for teams in games, set select 
+//            to that colour)
+//
+//          'team_1_name'
+//          *(get name for team 1)
+// 
+//          'team_2_name'
+//          *(get name for team 2)
+//      -fieldView.helpers
+//          'settings'
+//          *(get distance to fields from user)
+// 
+// 
+// 
+//      -------------------------------
+//      ---------Event functions-------
+//      -------------------------------
+//      -main.events
+//          'click #gps'
+//          *(set user gps location)
+// 
+//          'click #toggle'
+//          *(toggle sidebar)
+//      -fieldView.events
+//          'click .reactive-table tbody tr'
+//          *(go to field clicked from field)
+//      -menuItems.events
+//          'click .logout'
+//          *(logout a user)
+//      -menuTournament.events
+//          'click .tournament'
+//          *(unfold clicked tournament)
+//
+//          'click .tournament'
+//          *(unfold clicked field)
+//      -gameView.events
+//          'click #nextGame'
+//          *(go to next game on field)
+//
+//          'click #prevGame'
+//          *(go to previous game on field)
+//
+//          'click #setGps'
+//          *(set field to user gps location)
+//
+//          'click #team1plus'
+//          *(increase team 1 score by 1)
+//
+//          'click #team2Plus'
+//          *(increase team 2 score by 1)
+//
+//          'click #team1Minus'
+//          *(decrease team 1 score by 1)
+//
+//          'click #team2Minus'
+//          *(decrease team 2 score by 1)
+//
+//          'click viscueTeam1'
+//          *(if teamname is clicked open modal to let user choose visual cues)
+//
+//          'click viscueTeam2'
+//          *(if teamname is clicked open modal to let user choose visual cues)
+//  
+//          'click #isFinal'
+//          *(if game is done and score shouldnt be adjusted, block score buttons with overlay)
+//
+//      -viscue.events
+//          'change #colorpicker1'
+//          *(change visual cue for team 1)
+//
+//          'change #colorpicker2'
+//          *(change visual cue for team 2)
+//
+//          'click #exit'
+//          *(exit visual cue picker modal by clicking cross)
+// 
+// 
+//      -------------------------------
+//      ------OnRendered functions-----
+//      -------------------------------
+//      -main.OnRendered
+//      *(initialise sidebar instance)
+//
+//          
+//      (loginPage.events prevents event default for the submit form button)
+//
+//      -loginPage.onRendered
+//      *(validate login)
+//
+//      (registerPage.events prevents event default for the submit form button)
+//      
+//      -registerPage.onRendered
+//      *(validate register)
+// 
+//
+//  -Server-side-code 
+//      -kadira code for debugging
+//      -houston code to add users and admins to adminpanel
+//
+//      -Methods
+//          Following methods pull data from leaguevine and
+//          insert it into the database:
+//              -updateTournament
+//              -updateGames
+//              -updateFields
+//          Following method pushes scores to leaguevine:
+//              -updateScore
+//
+//      -SyncedCron: runs every 2 minutes to sync database with leaguevine
+// 
+
+
 var Tournaments = new Meteor.Collection('tournaments');
 var Games = new Meteor.Collection('games');
 var Fields = new Meteor.Collection('fields');
+
 
 // Routes-----------------------------------------------------------------------
 Router.configure( {
@@ -90,6 +247,10 @@ Router.onStop(function () {
     }
 });
 
+// ================================================================================
+//                             -Client-side-code
+// ================================================================================
+
 if (Meteor.isClient) {
     // Helper functions---------------------------------------------------------
     // Find all tournaments
@@ -117,7 +278,7 @@ if (Meteor.isClient) {
     // Find all games from the given field
     Template.menuField.helpers( {
         'game': function() {
-            return Games.find({game_site_id: this.id});
+            return Games.find({game_site_id: this.id}, {sort: {start_time: 1}});
         }
     });
 
@@ -503,6 +664,12 @@ if (Meteor.isClient) {
                 }
             ); 
             $("div.overlay").fadeToggle("fast");
+
+            // If there is an error while updating the updateScore method 
+            // will return true and there will be a warning.    
+            if (Meteor.call('updateScore', current_game["id"])) {
+                AntiModals.alert("An error occured, please try again.");
+            }
         }
     });
 
@@ -516,7 +683,7 @@ if (Meteor.isClient) {
             color = $('#colorpicker1').val();
             // Find all games where team 1 plays as team 1.
             Games.find({team_1_id: current_game["team_1_id"]}).forEach(function (other_game) {
-                if (moment(current_game.start_time).isAfter(other_game.start_time) || 
+                if (moment(current_game.start_time).isBefore(other_game.start_time) || 
                     current_game._id == other_game._id) {
                     Games.update(
                         {_id: other_game._id},
@@ -528,7 +695,7 @@ if (Meteor.isClient) {
             });
             // Find all games where team 1 plays as team 2.
             Games.find({team_2_id: current_game["team_1_id"]}).forEach(function (other_game) {
-                if (moment(current_game.start_time).isAfter(other_game.start_time) || 
+                if (moment(current_game.start_time).isBefore(other_game.start_time) || 
                     current_game._id == other_game._id) {
                     Games.update(
                         {_id: other_game._id},
@@ -683,6 +850,9 @@ if (Meteor.isClient) {
 }
 
 if(Meteor.isServer) {
+    Meteor.startup(function() {
+        Kadira.connect('oumXWvpMg3FWF6Mo5', '0382917b-36f1-4b5a-b051-6a371edc289a');
+    });
     Houston.add_collection(Meteor.users);
     Houston.add_collection(Houston._admins);
 
@@ -751,8 +921,8 @@ if(Meteor.isServer) {
                     }
 
                     var game_found = Games.find({id: match["id"]}).count();
-                    var new_score = moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated)
-                    var new_match_stats = moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"])
+                    var new_score = moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated);
+                    var new_match_stats = moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"]);
 
                     // If there is a new game or if a game needs to be updated
                     // or if there is a new score.
@@ -926,9 +1096,20 @@ if(Meteor.isServer) {
         job: function() {
             // The tids of the tournaments we want in the database.
             var tids = [20065,20051, 20019, 19752, 19753];
+
+            var tournaments = Tournaments.find({});
+            if (tournaments.count() > 0) {
+                console.log("tournaments found");
+                tids = []
+                tournaments.forEach(function (tour) {
+                    tids.push(tour["id"]);
+                });
+            }
             // Insert tournaments
             Meteor.call('updateTournament', tids);
             tids.forEach(function (tid) {
+                // console.log(tid + " being synced");
+
                 // Check if the sync boolean is true, before syncing, else
                 // skip that tournament.
                 var tournament = Tournaments.findOne({id: tid});

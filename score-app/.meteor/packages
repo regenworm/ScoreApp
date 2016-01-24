@@ -37,3 +37,4 @@ lai:collection-extensions
 tmeasday:paginated-subscription
 dburles:mongo-collection-instances
 percolate:synced-cron
+meteorhacks:kadira

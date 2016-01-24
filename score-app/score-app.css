@@ -18,8 +18,8 @@ html, body {
 }
 
 .wrapper {
-  min-height: 90%;
-  /*margin: 0 auto -155px;  the bottom margin is the negative value of the footer's height */
+    min-height: 90%;
+    /*margin: 0 auto -155px;  the bottom margin is the negative value of the footer's height */
 }
 
 #content {
@@ -47,7 +47,7 @@ html, body {
 }
 
 .push {
-  height: auto;
+    height: auto;
 }
 #footer {
     right: 0;
@@ -182,34 +182,38 @@ html, body {
 }
 
 select {
-  width: 100%;
-  height: 80px;
-  min-height: 80px;
-  max-height: 30%;
+    width: 100%;
+    height: 80px;
+    min-height: 80px;
+    max-height: 30%;
   /*min-height: 50px;*/
 }
 
 .vishead {
-  color: #fff;
+    color: #fff;
 }
 
 .team_1_col, .team_2_col { 
-  padding: 8px;
+    padding: 8px;
 }
 
 .exit {
-  position: relative;
-  width: 100%;
+    position: relative;
+    width: 100%;
+}
+
+.exit:hover {
+    cursor: pointer; cursor: hand;
 }
 
 #exit {
-  color: #fff;
-  position: absolute;
-  top: 0px;
-  right: 0px;
+    color: #fff;
+    position: absolute;
+    top: 0px;
+    right: 0px;
 }
 .viscue {
-  height: 50%;
+    height: 50%;
 }
 
 /*

@@ -1098,19 +1098,16 @@ if(Meteor.isServer) {
         },
         job: function() {
             var tournaments = Tournaments.find({});
-            var tids;
+            var tids = [];
             if (tournaments.count() > 0) {
-                console.log("tournaments found");
-                tids = []
                 tournaments.forEach(function (tour) {
                     tids.push(tour["id"]);
                 });
             }
-            if (typeof tids !== "undefined" && tids.length > 0) {
+            if (tids.length > 0) {
                 // Insert tournaments
                 Meteor.call('updateTournament', tids);
                 tids.forEach(function (tid) {
-                    console.log(tid + " being synced");
 
                     // Check if the sync boolean is true, before syncing, else
                     // skip that tournament.

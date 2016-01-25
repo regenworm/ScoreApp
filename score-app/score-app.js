@@ -1087,6 +1087,9 @@ if(Meteor.isServer) {
     });
 
     // Sync database with LeagueVine--------------------------------------------
+    // The tids of the tournaments we want in the database.
+    Meteor.call('updateTournament', [20065,20051, 20019, 19752, 19753]);
+
     SyncedCron.add({
         name: 'LeaguevineSync',
         // We sync every 10 minutes.
@@ -1094,10 +1097,8 @@ if(Meteor.isServer) {
             return parser.text('every 2 minutes');
         },
         job: function() {
-            // The tids of the tournaments we want in the database.
-            var tids = [20065,20051, 20019, 19752, 19753];
-
             var tournaments = Tournaments.find({});
+            var tids;
             if (tournaments.count() > 0) {
                 console.log("tournaments found");
                 tids = []
@@ -1105,24 +1106,26 @@ if(Meteor.isServer) {
                     tids.push(tour["id"]);
                 });
             }
-            // Insert tournaments
-            Meteor.call('updateTournament', tids);
-            tids.forEach(function (tid) {
-                // console.log(tid + " being synced");
+            if (typeof tids !== "undefined" && tids.length > 0) {
+                // Insert tournaments
+                Meteor.call('updateTournament', tids);
+                tids.forEach(function (tid) {
+                    console.log(tid + " being synced");
 
-                // Check if the sync boolean is true, before syncing, else
-                // skip that tournament.
-                var tournament = Tournaments.findOne({id: tid});
-                if (tournament && !tournament["sync"]) {
-                    return;
-                } else {
-                    // Insert or update games rounds.
-                    Meteor.call("updateGames", tid);
+                    // Check if the sync boolean is true, before syncing, else
+                    // skip that tournament.
+                    var tournament = Tournaments.findOne({id: tid});
+                    if (tournament && !tournament["sync"]) {
+                        return;
+                    } else {
+                        // Insert or update games rounds.
+                        Meteor.call("updateGames", tid);
 
-                    // Insert or update fields.
-                    Meteor.call('updateFields', tid);
-                }
-            });
+                        // Insert or update fields.
+                        Meteor.call('updateFields', tid);
+                    }
+                });
+            }
         }
     });
 

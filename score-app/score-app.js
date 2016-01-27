@@ -922,8 +922,13 @@ if(Meteor.isServer) {
                     }
 
                     var game_found = Games.find({id: match["id"]}).count();
-                    var new_score = moment(Games.findOne({id: match["id"]})["score_last_updated"]).isBefore(score_last_updated);
-                    var new_match_stats = moment(Games.findOne({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"]);
+                    var new_score = false;
+                    var new_match_stats = false;
+                    // if game exists check if new score and new match stats
+                    if (game_found) {
+                        new_score = moment(Games.findOne({id: match["id"]})["score_last_updated"]).isBefore(score_last_updated);
+                        new_match_stats = moment(Games.findOne({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"]);
+                    }
 
                     // If there is a new game or if a game needs to be updated
                     // or if there is a new score.
@@ -1099,7 +1104,7 @@ if(Meteor.isServer) {
         name: 'LeaguevineSync',
         // We sync every 10 minutes.
         schedule: function(parser) {
-            return parser.text('every 2 minutes');
+            return parser.text('every 1 minutes');
         },
         job: function() {
             var tournaments = Tournaments.find({});

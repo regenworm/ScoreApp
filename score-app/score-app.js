@@ -522,6 +522,7 @@ if (Meteor.isClient) {
                         {location: pos}
                     }
                 );
+                AntiModals.alert("Location set!");
             } else {
                 AntiModals.alert("Please set your gps location first by clicking the gps button next to the menu button!")
             }
@@ -908,9 +909,9 @@ if(Meteor.isServer) {
                     // We want the last update of the game score, else if there
                     // were no game score updates, we set it to the last update
                     // of the match.
-                    var scores_last_updated = match["time_last_updated"];
-                    if (game_scores["data"]["meta"] > 0) {
-                        scores_last_updated = game_scores["data"]["objects"][0]["time_last_updated"];
+                    var score_last_updated = match["time_last_updated"];
+                    if (game_scores["data"]["meta"]["total_count"] > 0) {
+                        score_last_updated = game_scores["data"]["objects"][0]["time_last_updated"];
                     }
 
                     // Default score final is false, unless it is specified in
@@ -921,8 +922,8 @@ if(Meteor.isServer) {
                     }
 
                     var game_found = Games.find({id: match["id"]}).count();
-                    var new_score = moment(Games.find({id: match["id"]})["scores_last_updated"]).isBefore(scores_last_updated);
-                    var new_match_stats = moment(Games.find({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"]);
+                    var new_score = moment(Games.findOne({id: match["id"]})["score_last_updated"]).isBefore(score_last_updated);
+                    var new_match_stats = moment(Games.findOne({id: match["id"]})["time_last_updated"]).isBefore(match["time_last_updated"]);
 
                     // If there is a new game or if a game needs to be updated
                     // or if there is a new score.
@@ -936,7 +937,7 @@ if(Meteor.isServer) {
                             team_2_score: match["team_2_score"],
                             start_time: Date.parse(match["start_time"]),
                             is_final: score_final,
-                            score_last_updated: scores_last_updated
+                            score_last_updated: score_last_updated
                         };
 
                         // Some stats if there is no new score.
@@ -1074,8 +1075,12 @@ if(Meteor.isServer) {
                         // has (for sync purposes).
                         Games.update(
                             {id: game["id"]},
-                            {$set: {scores_last_updated: result["time_last_updated"]}
-                        })
+                            {$set: {"score_last_updated": result["data"]["time_last_updated"]}},
+                            function (err, res) {
+                                // callback for database update
+                                // console.log(err, res);
+                            }
+                        );
                     }
                     if (error) {
                         return true

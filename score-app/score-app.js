@@ -306,12 +306,15 @@ if (Meteor.isClient) {
         'parsed_time': function() {
             return moment(this['start_time']).format('Do MMMM, h:mm a');
         },
+
         'init_page': function() {
-            if (this["is_final"]) {
+            var is_final_check = this["is_final"];
+            if (is_final_check) {
                 $("div.overlay_score").css({"display": "block"});
             } else {
                 $("div.overlay_score").css({"display": "none"});
             }
+            return is_final_check;
         },
         'tournament_name': function() {
             var tournament = Tournaments.findOne({id: this["tournament_id"]});
@@ -328,7 +331,8 @@ if (Meteor.isClient) {
             return field["name"];
         },
         'over_time': function() {
-            if(moment().diff(moment(this["start_time"]), "weeks", true) > 2) {
+            var current_start_time = this["start_time"];
+            if(moment().diff(moment(current_start_time), "weeks", true) > 2) {
                 return true;   
             }
         }

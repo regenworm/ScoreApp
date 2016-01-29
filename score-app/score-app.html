@@ -124,7 +124,6 @@ location and yours -->
 
 <!-- What happens on a game view -->
 <template name="gameView">
-    {{init_page}}
     <div class="row">
         <div class="col-xs-12 centerDiv">
             <h2>{{tournament_name}}</h2>
@@ -138,9 +137,15 @@ location and yours -->
         </div>
         <div class="col-xs-2 centerDiv">
             {{#unless over_time}}
-                <button id="isFinal">
-                    Deactivate Game
-                </button>
+                {{#if init_page}}
+                    <button id="isFinal">
+                        Activate Game
+                    </button>
+                {{else}}
+                    <button id="isFinal">
+                        Deactivate Game
+                    </button>
+                {{/if}}
             {{/unless}}
         </div>
         <div class="col-xs-5 centerDiv">

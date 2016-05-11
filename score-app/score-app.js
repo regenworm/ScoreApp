@@ -1102,7 +1102,7 @@ if(Meteor.isServer) {
 
     // Sync database with LeagueVine--------------------------------------------
     // The tids of the tournaments we want in the database.
-    Meteor.call('updateTournament', [20065,20051, 20019, 19752, 19753]);
+    Meteor.call('updateTournament', [20060,20059, 20058]);
 
     SyncedCron.add({
         name: 'LeaguevineSync',

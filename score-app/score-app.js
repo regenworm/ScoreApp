@@ -661,9 +661,10 @@ if (Meteor.isClient) {
         // When the final button has been pressed, change the final boolean and
         // toggle the overlay.
         'click #isFinal': function () {
+            var current_game = this;
             event.preventDefault();
             Games.update(
-                {_id: this['_id']},
+                {_id: current_game['_id']},
                 {$set: 
                     {is_final: !this["is_final"]}
                 }
@@ -856,7 +857,7 @@ if (Meteor.isClient) {
 
 if(Meteor.isServer) {
     Meteor.startup(function() {
-        Kadira.connect('oumXWvpMg3FWF6Mo5', '0382917b-36f1-4b5a-b051-6a371edc289a');
+        Kadira.connect('DJoPLsWsq7evWp6RT', '706f52ed-8293-47ee-addb-e192c6d70a91');
     });
     Houston.add_collection(Meteor.users);
     Houston.add_collection(Houston._admins);
@@ -1057,6 +1058,7 @@ if(Meteor.isServer) {
 
         // Will be called when a user changes the score.
         // Push the score to LeagueVine.
+        // now using bearer token associated with Scoring App account on leaguevine (email: windmillwinduptech@gmail.com)
         updateScore: function(game) {
             game = Games.findOne({id: game});
             var requestbody = {
@@ -1069,7 +1071,7 @@ if(Meteor.isServer) {
                     'is_final': game["is_final"]
                 },
                 'headers': {
-                    'Authorization': 'bearer 3608fa9acf',
+                    'Authorization': 'bearer 9c17f8a671',
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 }
@@ -1092,6 +1094,7 @@ if(Meteor.isServer) {
                         );
                     }
                     if (error) {
+                        console.log(error.message);
                         return true
                     }
                 }
